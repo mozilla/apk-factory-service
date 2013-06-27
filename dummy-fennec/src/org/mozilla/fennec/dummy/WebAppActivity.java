@@ -22,7 +22,7 @@ public class WebAppActivity extends Activity {
         String manifestUrl = intent.getStringExtra("manifestUrl");
         boolean isPackage = intent.getBooleanExtra("isPackage", false);
 
-        Log.i(C.TAG, "Installing manifestUrl: " + manifestUrl);
+        Log.i(C.TAG, "Running manifestUrl: " + manifestUrl);
 
         textView.setText(manifestUrl);
     }

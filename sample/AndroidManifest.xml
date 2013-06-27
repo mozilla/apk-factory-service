@@ -19,6 +19,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        <meta-data android:name="webapp" android:value="hosted" />
     </application>
 
 </manifest>
