@@ -47,6 +47,10 @@ public class WebAppRegistry {
 
     public Editor addWebApp(Editor editor, ApplicationInfo app) {
         Log.i(C.TAG, "Webapp " + app.packageName + " added");
+
+        // TODO initiate the sucking out of the zip file from the assets directory
+        // or precaching of the hosted app.
+
         return editor.putBoolean(app.packageName, Boolean.TRUE);
     }
 
@@ -61,6 +65,10 @@ public class WebAppRegistry {
 
     public Editor removeWebApp(Editor editor, String packageName) {
         Log.i(C.TAG, "Webapp " + packageName + " removed");
+
+        // TODO remove the profile directory of the app that is to be
+        // uninstalled.
+
         return editor.remove(packageName);
     }
 
