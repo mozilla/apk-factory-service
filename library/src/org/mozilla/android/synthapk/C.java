@@ -3,7 +3,6 @@ package org.mozilla.android.synthapk;
 public final class C {
 
 
-    public static final int INSTALL_WEBRT = 255;
     private C() {
         // no instantiation
     }

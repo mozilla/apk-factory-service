@@ -40,7 +40,7 @@ public class LauncherActivity extends Activity {
                     Uri.parse("market://search?q=pname:"+ C.FENNEC_PACKAGE_NAME));
             // TODO add a dialog
 
-            startActivityForResult(marketIntent, C.INSTALL_WEBRT);
+            startActivityForResult(marketIntent, R.id.install_runtime_from_market);
         } else {
             startWebApp(intent);
         }
@@ -72,7 +72,7 @@ public class LauncherActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // TODO Auto-generated method stub
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == Activity.RESULT_OK && requestCode == C.INSTALL_WEBRT) {
+        if (requestCode == R.id.install_runtime_from_market && resultCode == Activity.RESULT_OK) {
             ensureFirefoxIsAvailable();
         }
     }
