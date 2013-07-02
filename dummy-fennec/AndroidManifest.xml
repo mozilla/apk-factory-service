@@ -19,6 +19,10 @@
                 android:name=".WebAppActivity"
                 android:label="@string/app_name">
             <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <data android:mimeType="application/webapp"/>
@@ -35,6 +39,12 @@
                 <data android:scheme="package"/>
             </intent-filter>
         </receiver>
+        <receiver android:name=".PackagedAppRunReceiver">
+            <intent-filter>
+                <action android:name="org.mozilla.REGISTER_PACKAGED_APP" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".PackagedAppRunReceiver"/>
     </application>
 
 </manifest>

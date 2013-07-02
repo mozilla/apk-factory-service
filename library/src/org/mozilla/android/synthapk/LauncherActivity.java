@@ -10,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 
 public class LauncherActivity extends Activity {
 
@@ -39,9 +38,8 @@ public class LauncherActivity extends Activity {
 
         int numFirefoxes = isCallable(intent);
         if (numFirefoxes == 0) {
-            Log.i(C.TAG, "No runtimes available, launching play store");
-            Intent marketIntent = new Intent(Intent.ACTION_VIEW,
-                    Uri.parse("market://search?q=pname:"+ C.FENNEC_PACKAGE_NAME));
+            Logger.i("No runtimes available, launching play store");
+            Intent marketIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://search?q=pname:"+ C.FENNEC_PACKAGE_NAME));
             // TODO add a dialog
 
             startActivityForResult(marketIntent, R.id.install_runtime_from_market);
@@ -51,14 +49,14 @@ public class LauncherActivity extends Activity {
     }
 
     public void startWebApp(Intent intent) {
-        Log.i(C.TAG, "At least one runtime available");
+        Logger.i("At least one runtime available");
 
-        Log.i(C.TAG, "Package name: " + this.getPackageName());
+        Logger.i("Package name: " + this.getPackageName());
         intent.putExtra("manifestUrl", getPackageName());
 
         try {
             String[] files = getAssets().list("");
-            Log.i(C.TAG, "Files available: " + Arrays.toString(files));
+            Logger.i("Files available: " + Arrays.toString(files));
         } catch (IOException e) {
             e.printStackTrace();
         }

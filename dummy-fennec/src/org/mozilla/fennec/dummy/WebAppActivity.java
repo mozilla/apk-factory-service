@@ -3,7 +3,6 @@ package org.mozilla.fennec.dummy;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.widget.TextView;
 
@@ -16,13 +15,11 @@ public class WebAppActivity extends Activity {
 
         TextView textView = (TextView) findViewById(R.id.manifest_url);
 
-
-
         Intent intent = getIntent();
         String manifestUrl = intent.getStringExtra("manifestUrl");
         boolean isPackage = intent.getBooleanExtra("isPackage", false);
 
-        Log.i(C.TAG, "Running manifestUrl: " + manifestUrl);
+        Logger.i("Running manifestUrl: " + manifestUrl);
 
         textView.setText(manifestUrl);
     }
