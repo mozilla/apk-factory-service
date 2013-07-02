@@ -17,9 +17,7 @@ import android.util.Log;
 public class WebAppRegistry {
     public void addApk(Context context, String packageName) {
         try {
-            ApplicationInfo app = context.getPackageManager()
-                    .getApplicationInfo(packageName,
-                            PackageManager.GET_META_DATA);
+            ApplicationInfo app = context.getPackageManager().getApplicationInfo(packageName, PackageManager.GET_META_DATA);
 
             Bundle metadata = app.metaData;
 

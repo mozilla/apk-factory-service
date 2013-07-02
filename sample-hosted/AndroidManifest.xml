@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.myorg.sample.webapp"
+    package="com.myorg.sample.hosted.webapp"
     android:versionCode="1"
     android:versionName="1.0" >
 
@@ -19,7 +19,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        
+
         <meta-data android:name="webapp" android:value="hosted" />
         <meta-data android:name="manifestUrl" android:value="http://wfwalker.github.io/opensun/online.webapp" />
     </application>
