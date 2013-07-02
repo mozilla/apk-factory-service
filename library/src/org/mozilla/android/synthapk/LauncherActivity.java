@@ -29,9 +29,13 @@ public class LauncherActivity extends Activity {
 
     private void ensureFirefoxIsAvailable() {
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setData(Uri.parse("http://mozilla.org"));
+
+        intent.setData(getIntent().getData());
+
         intent.setType(C.WEBAPP_MIMETYPE);
         intent.addCategory(Intent.CATEGORY_DEFAULT);
+
+        intent.putExtra(C.EXTRA_PACKAGE_NAME, getPackageName());
 
         int numFirefoxes = isCallable(intent);
         if (numFirefoxes == 0) {
