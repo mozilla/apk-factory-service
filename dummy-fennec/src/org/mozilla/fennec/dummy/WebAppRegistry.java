@@ -33,18 +33,8 @@ public class WebAppRegistry {
 
                 }
             } else {
-                return;
-                // packaged app
-                /*String contentProviderAuthorityName = app.packageName;
-                ParcelFileDescriptor file =  null;
-                try {
-                    file = context.getContentResolver().openFileDescriptor(Uri.parse("file://" + contentProviderAuthorityName), "r");
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
-
-                Logger.i("got file - size: " + file.getStatSize());*/
-
+                // NO-OP
+                // Prob a packaged app
             }
         } catch (NameNotFoundException e) {
             Logger.e("Package " + packageName + " not found");
