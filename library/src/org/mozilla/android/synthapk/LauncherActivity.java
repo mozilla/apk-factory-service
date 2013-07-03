@@ -35,7 +35,7 @@ public class LauncherActivity extends Activity {
         intent.setType(C.WEBAPP_MIMETYPE);
         intent.addCategory(Intent.CATEGORY_DEFAULT);
 
-        intent.putExtra(C.EXTRA_PACKAGE_NAME, getPackageName());
+
 
         int numFirefoxes = isCallable(intent);
         if (numFirefoxes == 0) {
@@ -53,8 +53,9 @@ public class LauncherActivity extends Activity {
     public void startWebApp(Intent intent) {
         Log.i(C.TAG, "At least one runtime available");
 
-        Log.i(C.TAG, "Package name: " + this.getPackageName());
+        Log.i(C.TAG, "1. Package name: " + this.getPackageName());
         intent.putExtra("manifestUrl", getPackageName());
+        intent.putExtra(C.EXTRA_PACKAGE_NAME, getPackageName());
 
         try {
             String[] files = getAssets().list("");
