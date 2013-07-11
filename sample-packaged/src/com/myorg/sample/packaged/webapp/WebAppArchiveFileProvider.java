@@ -14,10 +14,10 @@ public class WebAppArchiveFileProvider extends ContentProvider {
 
     public static final int TYPE_MANIFEST = 1;
     public static final int TYPE_ARCHIVE = 2;
-    // The authority is the symbolic name for the provider class
+
+    // The authority is the symbolic name for the provider class - can prob be derived from the app package name in the future
     public static final String AUTHORITY = "com.myorg.sample.packaged.webapp";
-    private static final String CLASS_NAME = "WebAppArchiveFileProvider";
-    // UriMatcher used to match against incoming requests
+
     private UriMatcher uriMatcher;
 
     @Override
@@ -67,15 +67,15 @@ public class WebAppArchiveFileProvider extends ContentProvider {
 
     @Override
     public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
-
-
         Logger.v("Called with uri: '" + uri + "'");
 
         switch (uriMatcher.match(uri)) {
             case TYPE_MANIFEST:
                 return getFile("mini.manifest");
+
             case TYPE_ARCHIVE:
                 return getFile("webapp.zip");
+
             // Otherwise unrecognised Uri
             default:
                 Logger.v("Unsupported uri: '" + uri);
@@ -84,12 +84,10 @@ public class WebAppArchiveFileProvider extends ContentProvider {
     }
 
     private ParcelFileDescriptor getFile(String fileName) throws FileNotFoundException {
-        // Take this and build the path to the file
         AssetManager assetManager = getContext().getAssets();
         File f = null;
 
         try {
-            //Logger.i(getContext().getCacheDir().getAbsolutePath());
             f = File.createTempFile("moz", "webapp", getContext().getCacheDir());
             if (!f.exists()) {
                 f.createNewFile();
@@ -109,7 +107,6 @@ public class WebAppArchiveFileProvider extends ContentProvider {
             Logger.e(e.getMessage());
         }
 
-        // Create & return a ParcelFileDescriptor pointing to the file
         return ParcelFileDescriptor.open(f, ParcelFileDescriptor.MODE_READ_ONLY);
 
     }
