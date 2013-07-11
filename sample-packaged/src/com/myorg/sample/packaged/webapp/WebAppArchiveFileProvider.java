@@ -12,6 +12,8 @@ import java.io.*;
 
 public class WebAppArchiveFileProvider extends ContentProvider {
 
+    public static final int TYPE_MANIFEST = 1;
+    public static final int TYPE_ARCHIVE = 2;
     // The authority is the symbolic name for the provider class
     public static final String AUTHORITY = "com.myorg.sample.packaged.webapp";
     private static final String CLASS_NAME = "WebAppArchiveFileProvider";
@@ -21,7 +23,8 @@ public class WebAppArchiveFileProvider extends ContentProvider {
     @Override
     public boolean onCreate() {
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-        uriMatcher.addURI(AUTHORITY, "*", 1);
+        uriMatcher.addURI(AUTHORITY, "manifest", TYPE_MANIFEST);
+        uriMatcher.addURI(AUTHORITY, "archive", TYPE_ARCHIVE);
 
         return true;
     }
@@ -37,7 +40,14 @@ public class WebAppArchiveFileProvider extends ContentProvider {
 
     @Override
     public String getType(Uri uri) {
-        return "application/zip";
+        switch (uriMatcher.match(uri)) {
+            case TYPE_MANIFEST:
+                return "text/plain";
+            case TYPE_ARCHIVE:
+                return "application/zip";
+            default:
+                throw new RuntimeException("Unsupported file type");
+        }
     }
 
     @Override
@@ -61,47 +71,46 @@ public class WebAppArchiveFileProvider extends ContentProvider {
 
         Logger.v("Called with uri: '" + uri + "'");
 
-        // Check incoming Uri against the matcher
         switch (uriMatcher.match(uri)) {
-
-            // If it returns 1 - then it matches the Uri defined in onCreate
-            case 1:
-                // Take this and build the path to the file
-                AssetManager assetManager = getContext().getAssets();
-                File f = null;
-
-                try {
-                    Logger.i(getContext().getCacheDir().getAbsolutePath());
-                    f = File.createTempFile("moz", "webapp", getContext().getCacheDir());
-                    if(!f.exists()) {
-                        f.createNewFile();
-                    }
-
-                    Logger.i("New file path:" + f.getAbsolutePath());
-
-                    InputStream inputStream = assetManager.open("webapp.zip");
-                    OutputStream out = new FileOutputStream(f);
-                    byte buf[] = new byte[1024];
-                    int len;
-                    while ((len = inputStream.read(buf)) > 0)
-                        out.write(buf, 0, len);
-                    out.close();
-                    inputStream.close();
-                } catch (IOException e) {
-                    Logger.e(e.getMessage());
-                }
-
-
-                // Create & return a ParcelFileDescriptor pointing to the file
-                // Note: I don't care what mode they ask for - they're only getting
-                // read only
-                ParcelFileDescriptor pfd = ParcelFileDescriptor.open(f, ParcelFileDescriptor.MODE_READ_ONLY);
-                return pfd;
-
+            case TYPE_MANIFEST:
+                return getFile("mini.manifest");
+            case TYPE_ARCHIVE:
+                return getFile("webapp.zip");
             // Otherwise unrecognised Uri
             default:
                 Logger.v("Unsupported uri: '" + uri);
                 throw new FileNotFoundException("Unsupported uri: " + uri.toString());
         }
+    }
+
+    private ParcelFileDescriptor getFile(String fileName) throws FileNotFoundException {
+        // Take this and build the path to the file
+        AssetManager assetManager = getContext().getAssets();
+        File f = null;
+
+        try {
+            //Logger.i(getContext().getCacheDir().getAbsolutePath());
+            f = File.createTempFile("moz", "webapp", getContext().getCacheDir());
+            if (!f.exists()) {
+                f.createNewFile();
+            }
+
+            Logger.i("New file path: " + f.getAbsolutePath());
+
+            InputStream inputStream = assetManager.open(fileName);
+            OutputStream out = new FileOutputStream(f);
+            byte buf[] = new byte[1024];
+            int len;
+            while ((len = inputStream.read(buf)) > 0)
+                out.write(buf, 0, len);
+            out.close();
+            inputStream.close();
+        } catch (IOException e) {
+            Logger.e(e.getMessage());
+        }
+
+        // Create & return a ParcelFileDescriptor pointing to the file
+        return ParcelFileDescriptor.open(f, ParcelFileDescriptor.MODE_READ_ONLY);
+
     }
 }

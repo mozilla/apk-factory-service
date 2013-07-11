@@ -6,5 +6,5 @@ public class C {
         // no instantiation
     }
 
-    public static final String TAG = "packged-webapp";
+    public static final String TAG = "packaged-webapp";
 }
