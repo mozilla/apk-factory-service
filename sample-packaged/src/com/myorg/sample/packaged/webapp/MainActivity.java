@@ -7,7 +7,7 @@ import android.os.Bundle;
 public class MainActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Intent i = new Intent("org.mozilla.REGISTER_PACKAGED_APP");
+        Intent i = new Intent("org.mozilla.fake.REGISTER_PACKAGED_APP");
         i.putExtra("PACKAGE_NAME", this.getPackageName());
         sendBroadcast(i);
     }
