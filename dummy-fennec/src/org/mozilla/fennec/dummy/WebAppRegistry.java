@@ -22,14 +22,13 @@ public class WebAppRegistry {
             if (metadata != null) {
                 String type = metadata.getString("webapp");
 
-                if (type != null) {
-
+                if ("hosted".equals(type)) {
                     addWebApp(getRegistry(context), app);
-
+                } else if ("packaged".equals(type)) {
+                    // packaged app
                 }
             } else {
-                // NO-OP
-                // Prob a packaged app
+                // huh?!
             }
         } catch (NameNotFoundException e) {
             Logger.e("Package " + packageName + " not found");

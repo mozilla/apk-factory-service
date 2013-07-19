@@ -39,12 +39,12 @@
                 <data android:scheme="package"/>
             </intent-filter>
         </receiver>
+
         <receiver android:name=".PackagedAppRunReceiver">
             <intent-filter>
-                <action android:name="org.mozilla.REGISTER_PACKAGED_APP" />
+                <action android:name="org.mozilla.fake.REGISTER_PACKAGED_APP" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".PackagedAppRunReceiver"/>
     </application>
 
 </manifest>

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 
+// listens to android.intent.action.PACKAGE_ADDED and android.intent.action.PACKAGE_REMOVED
 public class WebAppInstallReceiver extends BroadcastReceiver {
 
     private WebAppRegistry mRegistry;

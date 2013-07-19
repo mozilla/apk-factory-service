@@ -10,13 +10,13 @@ import android.os.ParcelFileDescriptor;
 
 import java.io.*;
 
-public class WebAppArchiveFileProvider extends ContentProvider {
+public class BrokenWebAppArchiveFileProvider extends ContentProvider {
 
     public static final int TYPE_MANIFEST = 1;
     public static final int TYPE_ARCHIVE = 2;
 
     // The authority is the symbolic name for the provider class - can prob be derived from the app package name in the future
-    public static final String AUTHORITY = "com.myorg.sample.packaged.webapp";
+    public static final String AUTHORITY = "com.myorg.sample.packaged.webapp.broken";
 
     private UriMatcher uriMatcher;
 
@@ -67,11 +67,11 @@ public class WebAppArchiveFileProvider extends ContentProvider {
 
     @Override
     public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
-        Logger.v("Called with uri: '" + uri + "'");
+        Logger.v("Called broken with uri: '" + uri + "'");
 
         switch (uriMatcher.match(uri)) {
             case TYPE_MANIFEST:
-                return getFile("mini.manifest");
+                return getFile("mini.manifest.broken");
 
             case TYPE_ARCHIVE:
                 return getFile("webapp.zip");
