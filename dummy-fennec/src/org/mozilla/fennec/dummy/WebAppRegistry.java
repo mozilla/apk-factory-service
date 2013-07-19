@@ -12,26 +12,27 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.util.Log;
 
 public class WebAppRegistry {
     public void addApk(Context context, String packageName) {
         try {
-            ApplicationInfo app = context.getPackageManager()
-                    .getApplicationInfo(packageName,
-                            PackageManager.GET_META_DATA);
+            ApplicationInfo app = context.getPackageManager().getApplicationInfo(packageName, PackageManager.GET_META_DATA);
 
             Bundle metadata = app.metaData;
+            if (metadata != null) {
+                String type = metadata.getString("webapp");
 
-            String type = metadata.getString("webapp");
+                if (type != null) {
 
-            if (type != null) {
+                    addWebApp(getRegistry(context), app);
 
-                addWebApp(getRegistry(context), app);
-
+                }
+            } else {
+                // NO-OP
+                // Prob a packaged app
             }
         } catch (NameNotFoundException e) {
-            Log.e(C.TAG, "Package " + packageName + " not found", e);
+            Logger.e("Package " + packageName + " not found");
         }
     }
 
@@ -46,15 +47,13 @@ public class WebAppRegistry {
     }
 
     public Editor addWebApp(Editor editor, ApplicationInfo app) {
-        Log.i(C.TAG, "Webapp " + app.packageName + " added");
+        Logger.i("Webapp " + app.packageName + " added");
 
         // TODO initiate the sucking out of the zip file from the assets directory
         // or precaching of the hosted app.
 
         return editor.putBoolean(app.packageName, Boolean.TRUE);
     }
-
-
 
     public void removeApk(Context context, String packageName) {
         if (getRegistry(context).contains(packageName)) {
@@ -64,14 +63,13 @@ public class WebAppRegistry {
     }
 
     public Editor removeWebApp(Editor editor, String packageName) {
-        Log.i(C.TAG, "Webapp " + packageName + " removed");
+        Logger.i("Webapp " + packageName + " removed");
 
         // TODO remove the profile directory of the app that is to be
         // uninstalled.
 
         return editor.remove(packageName);
     }
-
 
     public void rebuildRegistry(Context context) {
         long then = SystemClock.currentThreadTimeMillis();
@@ -112,11 +110,11 @@ public class WebAppRegistry {
 
         long now = SystemClock.currentThreadTimeMillis();
 
-        Log.i(C.TAG, "Rebuilding the registry took " + ((now - then) / 1000d)  + " seconds");
+        Logger.i("Rebuilding the registry took " + ((now - then) / 1000d) + " seconds");
 
     }
 
     public void log(Context context) {
-        Log.i(C.TAG, "All apps currently installed: " + this.getRegistry(context).getAll().keySet());
+        Logger.i("All apps currently installed: " + this.getRegistry(context).getAll().keySet());
     }
 }

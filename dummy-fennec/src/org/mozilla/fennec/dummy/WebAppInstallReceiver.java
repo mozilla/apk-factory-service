@@ -12,17 +12,19 @@ public class WebAppInstallReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        String packageName = getPackageName(intent.getData());
+
         if (intent.getBooleanExtra(Intent.EXTRA_REPLACING, false)) {
             // we don't need to do anything - because the app is being removed
             // then added.
+            Logger.i("Replacing: " + packageName);
             return;
         }
 
-        boolean isAdded = Intent.ACTION_PACKAGE_ADDED
-                .equals(intent.getAction());
+        boolean isAdded = Intent.ACTION_PACKAGE_ADDED.equals(intent.getAction());
 
-        String packageName = getPackageName(intent.getData());
-        Log.i(C.TAG, "Processing: " + packageName);
+
+        Logger.i("Processing: " + packageName);
         if (isAdded) {
             getRegistry(context).addApk(context, packageName);
         } else { // is removed
