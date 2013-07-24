@@ -1,22 +1,17 @@
 package org.mozilla.fennec.dummy;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.ParcelFileDescriptor;
 import android.os.SystemClock;
-
-import java.io.FileNotFoundException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 public class WebAppRegistry {
     public void addApk(Context context, String packageName) {
