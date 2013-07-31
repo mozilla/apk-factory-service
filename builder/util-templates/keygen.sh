@@ -1,0 +1,1 @@
+keytool -genkey -v -keystore {{keystore}} -alias {{alias}} -keyalg RSA -keysize 2048 -validity 10000 -dname "CN={{commonName}}, OU={{organizationUnit}}, O={{organization}}, L={{city}}, S={{state}}, C={{countryCode}}" -storepass {{store_password}} -keypass {{alias_password}}

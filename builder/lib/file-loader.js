@@ -45,7 +45,9 @@ _.extend(FileLoader.prototype, {
   write: function (filename, content) {
     ensureDirectoryExistsFor(filename);
     fs.writeFileSync(filename, content);
-  }
+  },
+
+  ensureDirectoryExistsFor: ensureDirectoryExistsFor
 });
 
 function HttpFileLoader (prefix) {

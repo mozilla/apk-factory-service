@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 "use strict";
 var optimist = require("optimist"),
-    fs = require("fs"),
+    fs = require("fs.extra"),
     _ = require("underscore"),
     path = require("path"),
     url = require("url"),
-    apk = require("./skeleton-builder");
+    apk = require("./apk-project-builder");
 
     fs.existsSync = fs.existsSync || require("path").existsSync;
 
@@ -43,18 +43,25 @@ var argv = optimist
     .argv;
 
 
-var loader, dirname, manifestFilename;
-if (/^\w+:\/\//.test(argv.manifest)) {
-  dirname = url.resolve(argv.manifest, ".");
-  manifestFilename = _(url.parse(argv.manifest).pathname.split("/")).last();
+var loader, dirname, manifestFilename, manifestUrl = argv.manifest;
+if (/^\w+:\/\//.test(manifestUrl)) {
+  dirname = url.resolve(manifestUrl, ".");
+  manifestFilename = _(url.parse(manifestUrl).pathname.split("/")).last();
 } else {
-  dirname = path.dirname(path.resolve(process.cwd(), argv.manifest));
-  manifestFilename = path.basename(argv.manifest);
+  dirname = path.dirname(path.resolve(process.cwd(), manifestUrl));
+  manifestFilename = path.basename(manifestUrl);
 }
-
-var manifestUrl = argv.overideManifest || argv.manifest;
+manifestUrl = argv.overideManifest || manifestUrl;
 var loader = require("./file-loader").create(dirname);
 var projectBuilder = new apk.ApkProjectCreator("template", argv.tmpDir, loader);
+
+function createDir(defaultDir, dir) {
+  dir = dir || defaultDir;
+  dir = path.resolve(__dirname, "..", dir);
+  fs.mkdirRecursiveSync(dir);
+  return dir;
+}
+
 
 loader.load(manifestFilename, function (err, string) {
   if (err) {
@@ -63,7 +70,23 @@ loader.load(manifestFilename, function (err, string) {
   }
   try {
     var manifest = JSON.parse(string);
-    projectBuilder.create(manifestUrl, manifest);
+    projectBuilder.create(manifestUrl, manifest, function () {
+      projectBuilder.build(createDir("cache/keys"), function (err, apkLoc) {
+
+        if (!err) {
+          var androidifier = require("./manifest-androidifier"),
+              packageName = androidifier.packageName(manifestUrl),
+              cacheDir = createDir("cache/apks/" + packageName),
+              cachedFile = path.join(cacheDir, "application.apk");
+          if (fs.existsSync(cachedFile)) {
+            fs.unlinkSync(cachedFile);
+          }
+          fs.linkSync(apkLoc, cachedFile);
+          console.log(cachedFile);
+        }
+      });
+    });
+
   } catch (e) {
     console.error("String received was: " + string);
     if (e.stack) {
