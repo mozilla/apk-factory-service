@@ -8,7 +8,7 @@ var _ = require("underscore"),
 var ApkProject = function (src, dest, loader) {
   dest = dest || (process.env.TMPDIR + "/app");
 
-  this.src = path.resolve(process.cwd(), src);
+  this.src = path.resolve(__dirname, "..", src);
   this.dest = path.resolve(process.cwd(), dest);
 
   this.env = new nunjucks.Environment([new nunjucks.FileSystemLoader(this.src)]);
@@ -86,6 +86,11 @@ _.extend(ApkProject.prototype, {
         self._templatize("res/values/strings.xml", stringsObj);
       }
 
+      self._templatize("build.xml", stringsObj);
+      self._templatize("project.properties", {
+        libraryProject: path.relative(self.dest, path.resolve(self.src, "..", "..", "library"))
+      });
+
       function downloaderCallback () {}
 
       var icons = manifest.icons || {};
@@ -93,45 +98,12 @@ _.extend(ApkProject.prototype, {
         var dest = path.join(self.dest, "res/drawable-" + androidify.iconSize(key) + "/ic_launcher.png");
         self.loader.copy(icons[key], dest, downloaderCallback);
       });
-
-
-
-
     });
   }
 
 });
 
 
-var manifestUrl = "http://wfwalker.github.io/opensun/online.webapp";
-
-var loader = require("./file-loader").create(
-    "samples");
-    //manifestUrl);
-
-var projectBuilder = new ApkProject("templates", "/tmp/test-app", loader);
-
-
-
-loader.load("sample-localized.manifest", function (err, string) {
-  if (err) {
-    console.error("Cannot load manifest: " + err);
-    return;
-  }
-  try {
-    var manifest = JSON.parse(string);
-    projectBuilder.create(manifestUrl, manifest);
-  } catch (e) {
-    console.error("String received was: " + string);
-    if (e.stack) {
-      console.error(e.stack);
-    }
-  }
-
-});
-
-
-
 module.exports = {
-
+  ApkProjectCreator: ApkProject
 };

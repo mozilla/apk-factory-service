@@ -49,7 +49,7 @@ _.extend(FileLoader.prototype, {
 });
 
 function HttpFileLoader (prefix) {
-  this.prefix = url.resolve(prefix, ".");
+  this.prefix = prefix;
 }
 HttpFileLoader.prototype = _.extend(new FileLoader(), {
 
