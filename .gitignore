@@ -18,3 +18,4 @@ local.properties
 # Eclipse project files
 .classpath
 .project
+builder/node_modules
