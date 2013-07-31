@@ -25,6 +25,6 @@
         </activity>
 
         <meta-data android:name="webapp" android:value="packaged" />
-        <meta-data android:name="manifestUrl" android:value="http://wfwalker.github.io/opensun/online.webapp" />
+        <meta-data android:name="originUrl" android:value="http://wfwalker.github.io/opensun/" />
     </application>
 </manifest>
