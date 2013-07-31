@@ -11,19 +11,13 @@ function packageName (manifestUrl) {
 }
 
 function permissions (webPermissions) {
-  if (!webPermissions) {
-    return [];
-  }
-  if (_.isArray(webPermissions)) {
-
-  } else if (_.isObject(webPermissions)) {
-    webPermissions = _.keys(webPermissions);
-  }
-
   var permissionMap = require("./android-permissions");
 
-  return _.chain(webPermissions).map(function (key) { return permissionMap[key]; }).
-            flatten().value();
+  return _.chain(webPermissions).keys().map(
+        function (key) {
+          var access = webPermissions[key].access;
+          return access ? permissionMap[key + ":" + access] : permissionMap[key];
+        }).flatten().uniq().value();
 }
 
 function versionCode (string) {
