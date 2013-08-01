@@ -31,7 +31,7 @@ _.extend(ApkProject.prototype, {
         throw e;
       }
     }
-
+    this.dest = fs.realpathSync(this.dest);
     fs.copyRecursive(this.src, this.dest, cb);
   },
 
@@ -125,7 +125,7 @@ _.extend(ApkProject.prototype, {
         keyFile = path.join(keyDir, hostname);
 
     self._templatize("project.properties", {
-      libraryProject: path.relative(self.dest, path.resolve(self.src, "..", "..", "library")),
+      libraryProject: path.relative(self.dest, path.resolve(__dirname, "..", "..", "library")),
       keystore: keyFile,
       keystore_password: KEYSTORE_PASSWORD,
       alias: ALIAS_NAME,
@@ -186,6 +186,10 @@ _.extend(ApkProject.prototype, {
       buildWithAnt();
     }
 
+  },
+
+  cleanup: function () {
+    fs.rmrfSync(this.dest);
   }
 
 });
