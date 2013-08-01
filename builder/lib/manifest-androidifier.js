@@ -21,7 +21,11 @@ function permissions (webPermissions) {
 }
 
 function versionCode (string) {
-  var match, re = /(\d+)/g, androidVersionCode = 0, multiplier = 10000;
+  var match, re = /(\d+)/g, androidVersionCode = 0,
+      // multipler = 10^(2*(n-1)),
+      // where n is the number of dotted digits we care about
+      // n = 3
+      multiplier = 10000;
 
   while (true) {
     match = re.exec(string);
