@@ -56,8 +56,8 @@ function iconSize (string) {
     "72": "hdpi", // android size
     "96": "xhdpi", // android size
     "128": "xhdpi",
-    "144": "xxhdpi", // android size
-    "256": "xxhpdi"
+    "144": "480dpi", // android size
+    "256": "480dpi"
   };
 
   return icons[string] || icons.fallback;

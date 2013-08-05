@@ -10,12 +10,12 @@ module.exports = {
 
     "browser": [],
 
-    "contacts:readonly": ["android.permissions.READ_CONTACTS"],
-    "contacts:readwrite": ["android.permissions.READ_CONTACTS",
-                          "android.permissions.WRITE_CONTACTS"],
-    "contacts:readcreate": ["android.permissions.READ_CONTACTS",
-                          "android.permissions.WRITE_CONTACTS"],
-    "contacts:createonly": ["android.permissions.WRITE_CONTACTS"],
+    "contacts:readonly": ["android.permission.READ_CONTACTS"],
+    "contacts:readwrite": ["android.permission.READ_CONTACTS",
+                          "android.permission.WRITE_CONTACTS"],
+    "contacts:readcreate": ["android.permissionsREAD_CONTACTS",
+                          "android.permission.WRITE_CONTACTS"],
+    "contacts:createonly": ["android.permission.WRITE_CONTACTS"],
 
     "desktop-notification": [],
 
@@ -41,16 +41,16 @@ module.exports = {
 
     "fmradio": [],
 
-    "geolocation": [ "android.permissions.ACCESS_COARSE_LOCATION",
-                      "android.permissions.ACCESS_FINE_LOCATION" ],
+    "geolocation": [ "android.permission.ACCESS_COARSE_LOCATION",
+                      "android.permission.ACCESS_FINE_LOCATION" ],
 
-    "mobilenetwork": [ "android.permissions.ACCESS_NETWORK_STATE",
-                        "android.permissions.ACCESS_WIFI_STATE" ],
+    "mobilenetwork": [ "android.permission.ACCESS_NETWORK_STATE",
+                        "android.permission.ACCESS_WIFI_STATE" ],
 
     "storage": [],
-    "systemXHR": ["android.permissions.INTERNET"],
+    "systemXHR": ["android.permission.INTERNET"],
 
-    "tcp-socket": [],
+    "tcp-socket": ["android.permission.INTERNET"],
 
     // certified
 
