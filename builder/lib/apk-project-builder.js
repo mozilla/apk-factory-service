@@ -33,6 +33,11 @@ _.extend(ApkProject.prototype, {
     }
     this.dest = fs.realpathSync(this.dest);
     fs.copyRecursive(this.src, this.dest, cb);
+
+    // Create the src/ subdirectory, which ant needs to build the project,
+    // but which doesn't exist in the template because it's empty (and you
+    // can't control the revisions of a directory in Git).
+    fs.mkdirpSync(path.resolve(this.dest, "src"));
   },
 
   _templatize: function (filesuffix, destFileSuffix, obj) {
