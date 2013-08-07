@@ -81,11 +81,21 @@ _.extend(ApkProject.prototype, {
       var stringsObj = {
         name: manifest.name,
         description: manifest.description || ""
-      };
+      }, re = /^(\w+)(?:-(\w+))?$/mg;
 
       if (manifest.default_locale && manifest.locales) {
         _.each(manifest.locales, function (i, locale) {
           var localizedStrings = _.extend({}, stringsObj, manifest.locales[locale]);
+
+          locale = locale.replace(re,
+                    function (match, lang, country) {
+                      if (country) {
+                        return lang + "-r" + country.toUpperCase();
+                      }
+                      return lang;
+                    }
+                  );
+
           self._templatize("res/values/strings.xml",
                           "res/values-" + locale +  "/strings.xml",
                           localizedStrings);
