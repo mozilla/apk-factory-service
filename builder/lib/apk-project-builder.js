@@ -37,9 +37,6 @@ _.extend(ApkProject.prototype, {
     // Create the src/ subdirectory, which ant needs to build the project,
     // but which doesn't exist in the template because it's empty (and you
     // can't control the revisions of a directory in Git).
-    //
-    // This will become unnecessary once we add a file to that subdirectory
-    // in the template.
     fs.mkdirpSync(path.resolve(this.dest, "src"));
   },
 
