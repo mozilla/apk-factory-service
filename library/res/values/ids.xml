@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item type="id" name="install_runtime_from_market" />
+    <item type="id" name="install_webapp_into_fennec" />
 </resources>

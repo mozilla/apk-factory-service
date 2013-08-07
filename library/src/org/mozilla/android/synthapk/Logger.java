@@ -45,7 +45,6 @@ package org.mozilla.android.synthapk;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-@SuppressWarnings("unused")
 public abstract class Logger {
 
     public static String DEFAULT_TAG = C.TAG;
