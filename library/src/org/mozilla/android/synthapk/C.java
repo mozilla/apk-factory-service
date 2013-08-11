@@ -12,4 +12,6 @@ public final class C {
     public static final String FENNEC_PACKAGE_NAME = "org.mozilla.firefox";
     public static final String EXTRA_PACKAGE_NAME = "packageName";
     public static final String APP_URI = "appUri";
+    public static final String APP_ACTION = "appAction";
+    public static final String APP_MIME_TYPE = "application/webapp";
 }

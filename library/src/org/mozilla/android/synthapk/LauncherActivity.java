@@ -20,19 +20,24 @@ public class LauncherActivity extends Activity {
 
         boolean success = startWebApp() || installWebApp() || installRuntime();
 
-
+        assert success;
     }
 
     public boolean startWebApp() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         String appUri = prefs.getString(C.APP_URI, null);
+        String action = prefs.getString(C.APP_ACTION, null);
 
         if (appUri != null) {
-            Intent intent = new Intent(appUri);
-            intent.addCategory(Intent.CATEGORY_DEFAULT);
+            Logger.i("appUri = " + appUri);
+            Logger.i("action = " + action);
 
-            //intent.setData(Uri.parse(appUri));
+
+            Intent intent = new Intent();
+            intent.setAction(action);
+            intent.setDataAndType(Uri.parse(appUri), C.APP_MIME_TYPE);
+
 
             if (isCallable(intent) > 0) {
                 Logger.i("Running webapp " + appUri);
@@ -87,16 +92,23 @@ public class LauncherActivity extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // TODO Auto-generated method stub
         super.onActivityResult(requestCode, resultCode, data);
-        boolean nextStep;
+        Logger.i("Back in Synthetic APK requestCode = " + requestCode);
+        boolean nextStep = false;
         if (requestCode == R.id.install_runtime_from_market && resultCode == Activity.RESULT_OK) {
             nextStep = startWebApp() || installWebApp();
         } else if (requestCode == R.id.install_webapp_into_fennec && resultCode == Activity.RESULT_OK) {
             String appUri = data.getStringExtra(C.APP_URI);
-            PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putString(C.APP_URI, appUri).commit();
+            String action = data.getStringExtra(C.APP_ACTION);
+            PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+                .edit()
+                .putString(C.APP_URI, appUri)
+                .putString(C.APP_ACTION, action)
+                .commit();
+            Logger.i("appUri = " + appUri);
             nextStep = startWebApp();
         }
+        assert nextStep;
     }
 
 }
