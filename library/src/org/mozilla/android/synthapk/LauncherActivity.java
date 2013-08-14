@@ -27,15 +27,13 @@ public class LauncherActivity extends Activity {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         String appUri = prefs.getString(C.APP_URI, null);
-        String action = prefs.getString(C.APP_ACTION, null);
 
         if (appUri != null) {
             Logger.i("appUri = " + appUri);
-            Logger.i("action = " + action);
-
 
             Intent intent = new Intent();
-            intent.setAction(action);
+            intent.addCategory(Intent.CATEGORY_DEFAULT);
+            intent.setAction(C.ACTION_WEBAPP);
             intent.setDataAndType(Uri.parse(appUri), C.APP_MIME_TYPE);
 
 

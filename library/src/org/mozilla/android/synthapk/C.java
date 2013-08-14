@@ -14,4 +14,5 @@ public final class C {
     public static final String APP_URI = "appUri";
     public static final String APP_ACTION = "appAction";
     public static final String APP_MIME_TYPE = "application/webapp";
+    public static final String ACTION_WEBAPP = "org.mozilla.gecko.WEBAPP";
 }
