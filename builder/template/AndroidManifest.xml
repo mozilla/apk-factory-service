@@ -16,12 +16,17 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme"
          >
-        <activity android:label="@string/app_name" android:name="org.mozilla.android.synthapk.LauncherActivity">
+        <activity android:label="@string/app_name" android:name="org.mozilla.android.synthapk.LauncherActivity" android:noHistory="true" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="org.mozilla.android.synthapk.InstallerActivity"
+            android:label="@string/title_activity_installer" >
+        </activity>
+
 
 
 
