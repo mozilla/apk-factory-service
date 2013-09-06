@@ -3,14 +3,22 @@ var _ = require("underscore");
 function packageName (manifestUrl) {
   var url = require("url"),
       dirname = url.resolve(manifestUrl, "."),
-      urlObj = url.parse(dirname);
+      urlObj = url.parse(dirname),
+      pathname = urlObj.pathname,
+      hostname = urlObj.hostname;
 
-  var parts = (urlObj.pathname + urlObj.hostname).split(/[.\/]/);
+  var parts = (pathname + hostname).split(/[.\/]/);
+  return _.chain(parts).
+            compact().reverse().value().
+            join(".").
+            replace(/[^\w.]+/g, "_");
 
-  return _.chain(parts).compact().reverse().value().join(".");
 }
 
 function permissions (webPermissions) {
+  if (!_.isObject(webPermissions)) {
+    return [];
+  }
   var permissionMap = require("./android-permissions");
 
   return _.chain(webPermissions).keys().map(

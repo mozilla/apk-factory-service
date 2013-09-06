@@ -75,13 +75,15 @@ _.extend(ApkProject.prototype, {
       }
 
 
-      self._templatize("AndroidManifest.xml", {
+      var androidManifestProperties = {
         version: manifest.version,
         versionCode: androidify.versionCode(manifest.version),
         manifestUrl: manifestUrl,
         permissions: androidify.permissions(manifest.permissions),
         packageName: androidify.packageName(manifestUrl)
-      });
+      };
+
+      self._templatize("AndroidManifest.xml", androidManifestProperties);
 
       var stringsObj = {
         name: manifest.name,
@@ -94,16 +96,20 @@ _.extend(ApkProject.prototype, {
 
           locale = locale.replace(re,
                     function (match, lang, country) {
+                      if (lang.length > 2) {
+                        return null;
+                      }
                       if (country) {
                         return lang + "-r" + country.toUpperCase();
                       }
                       return lang;
                     }
                   );
-
-          self._templatize("res/values/strings.xml",
-                          "res/values-" + locale +  "/strings.xml",
-                          localizedStrings);
+          if (locale === "value-null") {
+            self._templatize("res/values/strings.xml",
+                            "res/values-" + locale +  "/strings.xml",
+                            localizedStrings);
+          }
         });
 
         var localizedStrings = _.extend({}, stringsObj, manifest.locales[manifest.default_locale]);
@@ -113,7 +119,7 @@ _.extend(ApkProject.prototype, {
         self._templatize("res/values/strings.xml", stringsObj);
       }
 
-      self._templatize("build.xml", stringsObj);
+      self._templatize("build.xml", self._sanitize(stringsObj));
 
 
       function downloaderCallback () {}
@@ -125,11 +131,22 @@ _.extend(ApkProject.prototype, {
       });
 
       if (cb) {
-        cb();
+        cb(androidManifestProperties);
       }
     });
   },
 
+  _sanitize: function (value) {
+    if (_.isString(value)) {
+      return value.replace(/[^\w\.]+/g, "_");
+    }
+
+    var self = this;
+    _.each(value, function (i, key) {
+      value[key] = self._sanitize(value[key]);
+    });
+    return value;
+  },
 
   build: function (keyDir, cb) {
 
@@ -137,22 +154,24 @@ _.extend(ApkProject.prototype, {
         exec = require("child_process").exec;
 
     var hostname = url.parse(this.manifestUrl).hostname,
-        keyFile = path.join(keyDir, hostname);
+        keyFile = path.join(keyDir, hostname),
+        projectProperties = {
+          libraryProject: path.relative(self.dest, path.resolve(__dirname, "..", "..", "library")),
+          keystore: keyFile,
+          keystore_password: KEYSTORE_PASSWORD,
+          alias: ALIAS_NAME,
+          alias_password: ALIAS_PASSWORD
+        };
 
-    self._templatize("project.properties", {
-      libraryProject: path.relative(self.dest, path.resolve(__dirname, "..", "..", "library")),
-      keystore: keyFile,
-      keystore_password: KEYSTORE_PASSWORD,
-      alias: ALIAS_NAME,
-      alias_password: ALIAS_PASSWORD
-    });
+
+
+    self._templatize("project.properties", projectProperties);
 
 
     function buildWithAnt() {
-      console.log("Building with ant " + self.manifestUrl);
       exec("(cd " + self.dest + "; ant release)", function (error, stdout, stderr) {
 
-        var apkLocation = path.join(self.dest, "bin", self.manifest.name + "-release.apk");
+        var apkLocation = path.join(self.dest, "bin", self._sanitize(self.manifest.name) + "-release.apk");
 
         if (error) {
           console.error(error);
@@ -186,7 +205,6 @@ _.extend(ApkProject.prototype, {
         countryCode: "XX"
       });
 
-      console.log("Generating key for " + self.manifestUrl);
       exec(genKeyCommand, function (error, stdout, stderr) {
         if (!error) {
           buildWithAnt();
