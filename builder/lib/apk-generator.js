@@ -76,7 +76,10 @@ _.extend(ApkGenerator.prototype, {
       }
       try {
         var manifest = JSON.parse(string);
-        projectBuilder.create(manifestUrl, manifest, function () {
+        projectBuilder.create(manifestUrl, manifest, function (androidManifestProperties) {
+
+          console.log("Building " + androidManifestProperties.packageName + "-" + androidManifestProperties.version + " (" + androidManifestProperties.versionCode + ") from " + manifestUrl);
+
           projectBuilder.build(self.createDir("keys"), function (err, apkLoc) {
 
             if (!err) {
@@ -99,7 +102,14 @@ _.extend(ApkGenerator.prototype, {
         });
       } catch (e) {
         if (e.stack) {
+          console.error("Error building " + manifestUrl);
           console.error(e.stack);
+        }
+        if (cb) {
+          cb(err);
+        }
+        if (!err) {
+          projectBuilder.cleanup();
         }
       }
     });

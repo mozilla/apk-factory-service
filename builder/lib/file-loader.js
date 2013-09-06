@@ -58,7 +58,6 @@ HttpFileLoader.prototype = _.extend(new FileLoader(), {
   load: function (suffix, cb) {
     var srcFile = this.prefix + suffix;
     if (cb) {
-      console.log("Url: " + srcFile);
       request(srcFile, function (error, response, body) {
         if (!error && response.statusCode === 200) {
           cb(error, body);
