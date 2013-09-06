@@ -2,13 +2,13 @@ package org.mozilla.android.synthapk;
 
 import java.util.List;
 
-import android.net.Uri;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.net.Uri;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.Menu;
 
 public class InstallerActivity extends Activity {
@@ -20,13 +20,6 @@ public class InstallerActivity extends Activity {
 
         boolean success = installWebApp() || installRuntime();
         assert success;
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.installer, menu);
-        return true;
     }
 
     public boolean installRuntime() {
