@@ -35,6 +35,8 @@ public class LauncherActivity extends Activity {
 
         String appUri = prefs.getString(C.APP_URI, null);
 
+        String action = prefs.getString(C.APP_ACTION, null);
+
         String fennecPackageName = prefs.getString("fennecPackageName", null);
 
         String slotClass = prefs.getString("slotClassName", null);
@@ -42,7 +44,7 @@ public class LauncherActivity extends Activity {
         if (appUri != null) {
             Logger.i("appUri = " + appUri);
 
-            Intent intent = new Intent(C.ACTION_WEBAPP);
+            Intent intent = new Intent(action);
             intent.setComponent(new ComponentName(fennecPackageName, slotClass));
             intent.setData(Uri.parse(appUri));
 
