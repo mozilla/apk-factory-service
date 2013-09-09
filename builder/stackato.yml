@@ -1,0 +1,13 @@
+name: apk-builder
+
+mem: 128M
+
+framework:
+  type: node
+
+processes:
+  web: node lib/server.js
+
+services:
+  build: filesystem
+  cache: filesystem

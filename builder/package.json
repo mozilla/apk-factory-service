@@ -9,7 +9,8 @@
   ],
   "private": true,
   "scripts": {
-    "test": "tap test/test-*.js"
+    "test": "grunt",
+    "start": "node lib/server.js"
   },
   "devDependencies": {
     "grunt-contrib-jshint": "~0.6.0",
