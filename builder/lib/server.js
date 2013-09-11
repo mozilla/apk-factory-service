@@ -79,13 +79,14 @@ var appGenerator = function (request, response) {
   var generator = new ApkGenerator(argv.buildDir, argv.cacheDir);
 
   var manifestUrl = request.query.manifestUrl;
+  var appType = request.query.appType || "hosted";
 
   if (!manifestUrl) {
     response.status(400, "A manifestUrl param is needed");
     return;
   }
 
-  generator.generate(manifestUrl, function (err, apkLoc) {
+  generator.generate(manifestUrl, null, appType, function (err, apkLoc) {
     if (err) {
       response.status(400, err);
       return;
