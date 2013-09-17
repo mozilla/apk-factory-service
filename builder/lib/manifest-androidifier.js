@@ -9,10 +9,20 @@ function packageName (manifestUrl) {
 
   var parts = (pathname + hostname).split(/[.\/]/);
   return _.chain(parts).
-            compact().reverse().value().
-            join(".").
-            replace(/[^\w.]+/g, "_");
+            compact().reverse().
 
+            // Replace non-[A-Za-z0-9_] characters with underscores.
+            map(function(part) { return part.replace(/\W/g, "_") }).
+
+            // Strip non-[A-Za-z] characters from beginning to ensure
+            // first character is [A-Za-z].
+            map(function(part) { return part.replace(/^[^A-Za-z]+/, "") }).
+
+            // Ensure part has at least one character (in case all characters
+            // were stripped in the previous step).
+            map(function(part) { return part ? part : "x" }).
+
+            value().join(".");
 }
 
 function permissions (webPermissions) {
