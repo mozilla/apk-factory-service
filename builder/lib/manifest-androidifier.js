@@ -11,7 +11,7 @@ function packageName (manifestUrl) {
   return _.chain(parts).
             compact().reverse().value().
             join(".").
-            replace(/[^\w.]+/g, "_");
+            replace(/[^\w.]+/g, "");
 
 }
 

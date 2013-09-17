@@ -139,7 +139,7 @@ _.extend(ApkProject.prototype, {
 
   _sanitize: function (value) {
     if (_.isString(value)) {
-      return value.replace(/[^\w\.]+/g, "_");
+      return value.replace(/[^\w\.]+/g, "");
     }
 
     var self = this;
