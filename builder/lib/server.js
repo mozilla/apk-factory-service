@@ -101,6 +101,14 @@ var appGenerator = function (request, response) {
 
 app.get('/application.apk', appGenerator);
 
+var indexFile = function (request, response) {
+  response.status(200);
+  response.type("text/text");
+  response.send("200 Server OK");
+};
+app.get("/", indexFile);
+app.get("/index.html", indexFile);
+
 
 var port = argv.port;
 var host = process.env.VCAP_APP_HOST || "127.0.0.1";
