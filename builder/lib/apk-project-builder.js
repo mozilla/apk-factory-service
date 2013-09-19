@@ -49,7 +49,7 @@ _.extend(ApkProject.prototype, {
     this.loader.write(path.resolve(this.dest, destFileSuffix), out);
   },
 
-  create: function (manifestUrl, manifest, cb) {
+  create: function (manifestUrl, manifest, appType, cb) {
     if (_.isObject(manifest) && _.isString(manifestUrl)) {
       // continue;
     } else {
@@ -79,6 +79,7 @@ _.extend(ApkProject.prototype, {
         version: manifest.version,
         versionCode: androidify.versionCode(manifest.version),
         manifestUrl: manifestUrl,
+        appType: appType,
         permissions: androidify.permissions(manifest.permissions),
         packageName: androidify.packageName(manifestUrl)
       };
@@ -138,7 +139,7 @@ _.extend(ApkProject.prototype, {
 
   _sanitize: function (value) {
     if (_.isString(value)) {
-      return value.replace(/[^\w\.]+/g, "_");
+      return value.replace(/[^\w\.]+/g, "");
     }
 
     var self = this;

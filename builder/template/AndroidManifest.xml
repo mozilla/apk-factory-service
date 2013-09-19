@@ -27,11 +27,7 @@
             android:label="@string/title_activity_installer" >
         </activity>
 
-
-
-
-
-        <meta-data android:name="webapp" android:value="hosted" />
+        <meta-data android:name="webapp" android:value="{{appType}}" />
         <meta-data android:name="manifestUrl" android:value="{{manifestUrl}}" />
     </application>
 

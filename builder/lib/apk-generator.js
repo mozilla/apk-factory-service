@@ -25,7 +25,7 @@ function ApkGenerator (buildDir, cacheDir) {
 
 _.extend(ApkGenerator.prototype, {
 
-  generate: function (manifestUrl, overideManifestPath, cb) {
+  generate: function (manifestUrl, overideManifestPath, appType, cb) {
 
     if (arguments.length === 2 && _.isFunction(overideManifestPath)) {
       cb = overideManifestPath;
@@ -76,7 +76,7 @@ _.extend(ApkGenerator.prototype, {
       }
       try {
         var manifest = JSON.parse(string);
-        projectBuilder.create(manifestUrl, manifest, function (androidManifestProperties) {
+        projectBuilder.create(manifestUrl, manifest, appType, function (androidManifestProperties) {
 
           console.log("Building " + androidManifestProperties.packageName + "-" + androidManifestProperties.version + " (" + androidManifestProperties.versionCode + ") from " + manifestUrl);
 

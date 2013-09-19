@@ -14,6 +14,11 @@ var argv = optimist
     .option('overideManifest', {
         desc: "The URL or path to the manifest"
     })
+    .option('type', {
+        alias: "t",
+        desc: "The type of app (hosted or packaged; default: hosted)",
+        default: "hosted"
+    })
     .option('tmpDir', {
         alias: "d",
         desc: "Use this directory as the temporary project directory",
@@ -44,7 +49,7 @@ var ApkGenerator = require("./apk-generator").ApkGenerator,
     generator = new ApkGenerator(argv.tmpDir);
 
 
-generator.generate(argv.manifest, argv.overideManifest, function (err, apkLoc) {
+generator.generate(argv.manifest, argv.overideManifest, argv.type, function (err, apkLoc) {
   var output;
   if (!err) {
 
