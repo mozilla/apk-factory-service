@@ -6,20 +6,17 @@ framework:
   type: node
 
 hooks:
-  pre-staging:
-  - cd tools ; tar zxvf apache-ant-1.9.2-bin.tar.gz
-  - cd tools ; tar zxvf jdk-7u40-linux-i586.tar.gz
-  - cd tools ; tar zxvf android-sdk_r22.0.5-linux.tgz
-  - cd tools ; unzip platform-tools_r18.0.1-linux.zip -d android-sdk-linux/
-  - cd tools ; unzip android-18_r01.zip -d android-sdk-linux/platforms
+  post-staging:
+  - ./install_tools.sh
   pre-running:
-  - (tools=`pwd`/tools ; PATH=$tools/android-sdk-linux/tools:$tools/android-sdk-linux/platform-tools:$pwd/bin/jdk1.7.0_40/bin:$PATH ; android update project -p template -t android-18 )
+  # - (tools=$STACKATO_FILESYSTEM_TOOLS ; PATH=$tools/android-sdk-linux/tools:$tools/android-sdk-linux/platform-tools:$pwd/bin/jdk1.7.0_40/bin:$PATH ; android update project -p template -t android-18)
 
 processes:
-  web: (tools=`pwd`/tools ; PATH=$tools/apache-ant-1.9.2/bin:$pwd/bin/jdk1.7.0_40/bin:$tools/android-sdk-linux/tools:$tools/android-sdk-linux/platform-tools:$PATH ; node lib/server.js)
+  web: (tools=$STACKATO_FILESYSTEM_TOOLS ; PATH=$tools/apache-ant-1.9.2/bin:$pwd/bin/jdk1.7.0_40/bin:$tools/android-sdk-linux/tools:$tools/android-sdk-linux/platform-tools:$PATH ; node lib/server.js)
 
 services:
   build: filesystem
   cache: filesystem
+  tools: filesystem
 
 ignores: ['node_modules', '.git', 'cache']
