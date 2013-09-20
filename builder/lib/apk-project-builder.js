@@ -139,8 +139,6 @@ _.extend(ApkProject.prototype, {
       var icons = manifest.icons || {};
       var iconsLeft = _.size(icons);
 
-      console.dir(androidManifestProperties);
-
       if (!iconsLeft) {
         // strange!
         cb(androidManifestProperties);
@@ -149,7 +147,6 @@ _.extend(ApkProject.prototype, {
       function downloaderCallback () {
         iconsLeft --;
         if (iconsLeft <= 0 && _.isFunction(cb)) {
-
           cb(androidManifestProperties);
         }
       }
