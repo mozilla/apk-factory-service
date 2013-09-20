@@ -65,9 +65,9 @@ HttpFileLoader.prototype = _.extend(new FileLoader(), {
     if (cb) {
       request(srcFile, function (error, response, body) {
         if (!error && response.statusCode === 200) {
-          cb(error, body);
+          cb(error, body.toString());
         } else {
-          cb(error, body);
+          cb(error);
         }
       });
     } else {
@@ -80,6 +80,7 @@ HttpFileLoader.prototype = _.extend(new FileLoader(), {
     var srcFile = url.resolve(this.prefix, suffix);
     ensureDirectoryExistsFor(destFile);
     request(srcFile).pipe(fs.createWriteStream(destFile));
+    cb();
   }
 
 });
