@@ -24,13 +24,17 @@ var ApkProject = function (src, dest, loader) {
 
 _.extend(ApkProject.prototype, {
   _makeNewSkeleton: function (cb) {
-    if (!fs.existsSync(this.dest)) {
-      try {
-        fs.mkdirpSync(this.dest);
-      } catch(e) {
-        throw e;
+
+    try {
+      if (fs.existsSync(this.dest)) {
+        fs.rmrfSync(this.dest);
       }
+
+      fs.mkdirpSync(this.dest);
+    } catch(e) {
+      throw e;
     }
+
     this.dest = fs.realpathSync(this.dest);
     fs.copyRecursive(this.src, this.dest, cb);
 
@@ -45,8 +49,17 @@ _.extend(ApkProject.prototype, {
       obj = destFileSuffix;
       destFileSuffix = filesuffix;
     }
-    var out = this.env.render(filesuffix, obj);
-    this.loader.write(path.resolve(this.dest, destFileSuffix), out);
+
+
+
+    var out = this.env.render(filesuffix, obj),
+        fileout = path.resolve(this.dest, destFileSuffix);
+
+    if (fs.existsSync(fileout)) {
+      fs.unlinkSync(fileout);
+    }
+
+    this.loader.write(fileout, out);
   },
 
   create: function (manifestUrl, manifest, appType, cb) {
