@@ -8,13 +8,15 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Process;
 import android.preference.PreferenceManager;
-import android.view.Menu;
+import android.util.Log;
 
 public class InstallerActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i(C.TAG, "Process pid=" + Process.myPid() + " (installer)");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_installer);
 
@@ -44,7 +46,7 @@ public class InstallerActivity extends Activity {
 
         if (isCallable(intent) > 0) {
             Logger.i("Installing webapp " + getPackageName());
-            startActivityForResult(Intent.createChooser(intent, "Select runtime"), R.id.install_webapp_into_fennec);
+            startActivityForResult(intent, R.id.install_webapp_into_fennec);
             return true;
         }
         return false;
@@ -53,7 +55,6 @@ public class InstallerActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Logger.i("Back in Synthetic APK requestCode = " + requestCode);
         boolean nextStep = false;
         if (requestCode == R.id.install_runtime_from_market && resultCode == Activity.RESULT_OK) {
             nextStep = startWebApp() || installWebApp();
@@ -67,7 +68,6 @@ public class InstallerActivity extends Activity {
                 .putString("fennecPackageName", data.getStringExtra("fennecPackageName"))
                 .putString("slotClassName", data.getStringExtra("slotClassName"))
                 .commit();
-            Logger.i("appUri = " + appUri);
             nextStep = startWebApp();
         }
         assert nextStep;

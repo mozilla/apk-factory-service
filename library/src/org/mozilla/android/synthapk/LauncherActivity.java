@@ -10,15 +10,18 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Process;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 public class LauncherActivity extends Activity {
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i(C.TAG, "Process pid=" + Process.myPid());
         super.onCreate(savedInstanceState);
-
+        setContentView(R.layout.activity_launcher);
         boolean success = startWebApp() || installWebApp();
 
         assert success;
