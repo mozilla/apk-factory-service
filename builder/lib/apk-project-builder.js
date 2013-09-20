@@ -123,17 +123,28 @@ _.extend(ApkProject.prototype, {
       self._templatize("build.xml", self._sanitize(stringsObj));
 
 
-      function downloaderCallback () {}
-
       var icons = manifest.icons || {};
+      var iconsLeft = _.size(icons);
+
+      console.dir(androidManifestProperties);
+
+      if (!iconsLeft) {
+        // strange!
+        cb(androidManifestProperties);
+      }
+
+      function downloaderCallback () {
+        iconsLeft --;
+        if (iconsLeft <= 0 && _.isFunction(cb)) {
+
+          cb(androidManifestProperties);
+        }
+      }
+
       _.each(icons, function (i, key) {
         var dest = path.join(self.dest, "res/drawable-" + androidify.iconSize(key) + "/ic_launcher.png");
         self.loader.copy(icons[key], dest, downloaderCallback);
       });
-
-      if (cb) {
-        cb(androidManifestProperties);
-      }
     });
   },
 

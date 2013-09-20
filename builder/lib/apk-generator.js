@@ -77,6 +77,11 @@ _.extend(ApkGenerator.prototype, {
       }
       try {
         var manifest = JSON.parse(string);
+        if (!!manifest.package_path) {
+          appType = "packaged";
+        } else {
+          appType = "hosted";
+        }
         projectBuilder.create(manifestUrl, manifest, appType, function (androidManifestProperties) {
 
           console.log("Building " + androidManifestProperties.packageName + "-" + androidManifestProperties.version + " (" + androidManifestProperties.versionCode + ") from " + manifestUrl);
