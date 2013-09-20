@@ -17,7 +17,7 @@ var argv = optimist
     .option('tmpDir', {
         alias: "d",
         desc: "Use this directory as the temporary project directory",
-        default: path.resolve(process.env.TMPDIR, "app")
+        default: path.resolve(process.env.TMPDIR || process.cwd(), "app")
     })
     .option("output", {
         alias: "o",

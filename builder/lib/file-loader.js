@@ -23,7 +23,12 @@ function ensureDirectoryExistsFor(filename) {
  */
 
 function FileLoader (prefix) {
-  this.prefix = path.resolve(process.cwd(), prefix);
+  if (prefix) {
+    this.prefix = path.resolve(process.cwd(), prefix);
+  } else {
+    this.prefix = process.cwd();
+  }
+
 }
 _.extend(FileLoader.prototype, {
   copy: function (suffix, destFile, cb) {
