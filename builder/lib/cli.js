@@ -19,10 +19,19 @@ var argv = optimist
         desc: "The type of app (hosted or packaged; default: hosted)",
         default: "hosted"
     })
-    .option('tmpDir', {
+    .option('buildDir', {
         alias: "d",
         desc: "Use this directory as the temporary project directory",
         default: path.resolve(process.env.TMPDIR || process.cwd(), "app")
+    })
+    .option('cacheDir', {
+        alias: "c",
+        desc: "Use this directory as the directory to cache keys and apks"
+    })
+    .option('force', {
+        alias: "f",
+        desc: "Force the projects to be built every time, i.e. don't rely on cached copies",
+        default: false
     })
     .option("output", {
         alias: "o",
@@ -42,11 +51,14 @@ var argv = optimist
           throw "Must specify a manifest location";
         }
 
+
+        argv.buildDir = path.resolve(process.cwd(), argv.buildDir);
+
     })
     .argv;
 
 var ApkGenerator = require("./apk-generator").ApkGenerator,
-    generator = new ApkGenerator(argv.tmpDir);
+    generator = new ApkGenerator(argv.buildDir, argv.cacheDir, argv.force);
 
 
 generator.generate(argv.manifest, argv.overideManifest, argv.type, function (err, apkLoc) {

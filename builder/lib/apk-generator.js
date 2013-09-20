@@ -13,13 +13,14 @@ function createDir(defaultDir, dir) {
 }
 
 
-function ApkGenerator (buildDir, cacheDir) {
+function ApkGenerator (buildDir, cacheDir, forceRebuild) {
   this.buildDir = buildDir || process.env.TMPDIR;
   if (cacheDir) {
     this.cacheDir = path.resolve(process.cwd(), cacheDir);
   } else {
     this.cacheDir = path.resolve(__dirname, "..", "cache");
   }
+  this.forceRebuild = forceRebuild;
 
 }
 
@@ -53,7 +54,7 @@ _.extend(ApkGenerator.prototype, {
       cachedFile = path.join(cacheDir, "application.apk");
 
 
-      if (fs.existsSync(cachedFile)) {
+      if (!this.forceRebuild && fs.existsSync(cachedFile)) {
         if (cb) {
           cb(null, cachedFile);
         }
@@ -106,7 +107,7 @@ _.extend(ApkGenerator.prototype, {
           console.error(e.stack);
         }
         if (cb) {
-          cb(err);
+          cb(e);
         }
         if (!err) {
           projectBuilder.cleanup();

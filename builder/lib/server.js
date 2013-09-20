@@ -35,6 +35,11 @@ var argv = optimist
         desc: "Use this directory as the directory to cache keys and apks",
         default: env("STACKATO_FILESYSTEM_CACHE", "TMPDIR")
     })
+    .option('force', {
+        alias: "f",
+        desc: "Force the projects to be built every time, i.e. don't rely on cached copies",
+        default: false
+    })
     .option('port', {
         alias: "p",
         desc: "Use the specific port to serve. This will override process.env.PORT.",
@@ -52,10 +57,6 @@ var argv = optimist
 
         if (!argv.buildDir) {
           throw "Must specify a build directory";
-        }
-
-        if (!argv.cacheDir) {
-          throw "Must specify a cache directory";
         }
 
         argv.buildDir = path.resolve(process.cwd(), argv.buildDir);
@@ -76,7 +77,7 @@ var app = express();
 
 var appGenerator = function (request, response) {
 
-  var generator = new ApkGenerator(argv.buildDir, argv.cacheDir);
+  var generator = new ApkGenerator(argv.buildDir, argv.cacheDir, argv.force);
 
   var manifestUrl = request.query.manifestUrl;
   var appType = request.query.appType || "hosted";
