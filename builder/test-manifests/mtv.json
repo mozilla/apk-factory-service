@@ -1,0 +1,13 @@
+﻿{
+  "name": "MTV App",
+  "description": "APP Mobile da MTV",
+   "version": "0.0.1",
+   "icons": {
+    "128": "/images/icon_128.png"
+  },
+   "developer": {
+    "name": "Tecnologia MTV",
+    "url": "http://mtv.uol.com.br/"
+  },
+  "default_locale": "pt"
+}

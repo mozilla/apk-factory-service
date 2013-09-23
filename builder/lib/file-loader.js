@@ -65,7 +65,7 @@ HttpFileLoader.prototype = _.extend(new FileLoader(), {
     if (cb) {
       request(srcFile, function (error, response, body) {
         if (!error && response.statusCode === 200) {
-          cb(error, body.toString());
+          cb(error, body);
         } else {
           cb(error);
         }
