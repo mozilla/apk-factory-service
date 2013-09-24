@@ -2,6 +2,9 @@ var _ = require("underscore"),
     url = require("url"),
     fs = require("fs.extra"),
     path = require("path"),
+    stream = require("stream"),
+    unzip = require("unzip"),
+    request = require("request"),
 
     apk = require("./apk-project-builder");
 
@@ -82,8 +85,44 @@ _.extend(ApkGenerator.prototype, {
         } else {
           appType = "hosted";
         }
-        projectBuilder.create(manifestUrl, manifest, appType, function (androidManifestProperties) {
 
+        if (appType == "hosted") {
+          create();
+        } else {
+          var extractDir = path.join(appBuildDir, "package");
+
+          request({ url: manifest.package_path, encoding: null }, onGetPackage);
+
+          function onGetPackage(err, response, packageData) {
+            if (err) { return console.error(err) }
+            if (response.statusCode != 200) {
+              return console.error("response status: " + response.statusCode);
+            }
+            var extractPackage = unzip.Extract({ path: extractDir });
+            extractPackage.on("error", function(err) { console.error(err) });
+            extractPackage.on("close", onCloseExtractPackage);
+            var bufferStream = new stream.Transform();
+            bufferStream.push(packageData);
+            bufferStream.end();
+            bufferStream.pipe(extractPackage);
+          }
+
+          function onCloseExtractPackage() {
+            var packageManifestPath = path.join(extractDir, "manifest.webapp");
+            var packageManifestData = fs.readFileSync(packageManifestPath, "utf8");
+            var packageManifest = JSON.parse(packageManifestData);
+            // Copy the permissions from the package-manifest to the mini-manifest.
+            manifest.permissions = packageManifest.permissions;
+
+            create();
+          }
+        }
+
+        function create() {
+          projectBuilder.create(manifestUrl, manifest, appType, onCreate);
+        }
+
+        function onCreate(androidManifestProperties) {
           console.log("Building " + androidManifestProperties.packageName + "-" + androidManifestProperties.version + " (" + androidManifestProperties.versionCode + ") from " + manifestUrl);
 
           projectBuilder.build(self.createDir("keys"), function (err, apkLoc) {
@@ -105,7 +144,8 @@ _.extend(ApkGenerator.prototype, {
               projectBuilder.cleanup();
             }
           });
-        });
+        };
+
       } catch (e) {
         if (e.stack) {
           console.error("Error building " + manifestUrl);
