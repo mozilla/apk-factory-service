@@ -115,7 +115,7 @@ _.extend(ApkGenerator.prototype, {
             // Use the zipfile's version of the manifest.
             // TODO what if the manifest isn't valid?
             var packageManifestData = loader.load("manifest.webapp");
-            manfest = JSON.parse(packageManifestData);
+            manifest = JSON.parse(packageManifestData);
 
             create();
           }
