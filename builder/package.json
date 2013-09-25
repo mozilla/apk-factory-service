@@ -24,7 +24,6 @@
     "fs.extra": "~1.2.1",
     "request": "~2.25.0",
     "optimist": "~0.6.0",
-    "express": "~3.3.8",
-    "unzip": "~0.1.9"
+    "express": "~3.3.8"
   }
 }
