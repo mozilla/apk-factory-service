@@ -32,7 +32,7 @@ function FileLoader (prefix) {
 }
 _.extend(FileLoader.prototype, {
   copy: function (suffix, destFile, cb) {
-    var srcFile = path.resolve(this.prefix, suffix);
+    var srcFile = path.join(this.prefix, suffix);
     ensureDirectoryExistsFor(destFile);
     fs.copy(srcFile, destFile, cb);
   },
@@ -43,7 +43,7 @@ _.extend(FileLoader.prototype, {
     if (cb) {
       fs.readFile(srcFile, cb);
     } else {
-      return fs.readFileSync(srcFile);
+      return fs.readFileSync(srcFile, "utf8");
     }
   },
 

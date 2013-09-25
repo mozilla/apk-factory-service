@@ -158,9 +158,9 @@ _.extend(ApkGenerator.prototype, {
         if (cb) {
           cb(e);
         }
-        if (!err) {
-          projectBuilder.cleanup();
-        }
+
+
+
       }
     });
 
