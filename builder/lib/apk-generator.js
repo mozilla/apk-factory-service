@@ -90,22 +90,19 @@ _.extend(ApkGenerator.prototype, {
           create();
         } else {
           var extractDir = path.join(appBuildDir, "package");
+          fs.mkdirRecursiveSync(extractDir);
 
-          request({ url: manifest.package_path, encoding: null }, onGetPackage);
 
-          function onGetPackage(err, response, packageData) {
-            if (err) { return console.error(err) }
-            if (response.statusCode != 200) {
-              return console.error("response status: " + response.statusCode);
-            }
-            var extractPackage = unzip.Extract({ path: extractDir });
+          function fetchPackage() {
+            var extractPackage = unzip.Extract({ path: extractDir, verbose: false });
             extractPackage.on("error", function(err) { console.error(err) });
             extractPackage.on("close", onCloseExtractPackage);
-            var bufferStream = new stream.Transform();
-            bufferStream.push(packageData);
-            bufferStream.end();
-            bufferStream.pipe(extractPackage);
+
+            var packagePath = url.resolve(manifestUrl, manifest.package_path);
+            request(packagePath).pipe(extractPackage);
           }
+          fetchPackage();
+
 
           function onCloseExtractPackage() {
             var packageManifestPath = path.join(extractDir, "manifest.webapp");
