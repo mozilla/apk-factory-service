@@ -105,11 +105,17 @@ _.extend(ApkGenerator.prototype, {
 
 
           function onCloseExtractPackage() {
-            var packageManifestPath = path.join(extractDir, "manifest.webapp");
-            var packageManifestData = fs.readFileSync(packageManifestPath, "utf8");
-            var packageManifest = JSON.parse(packageManifestData);
-            // Copy the permissions from the package-manifest to the mini-manifest.
-            manifest.permissions = packageManifest.permissions;
+            // Reset where we're going to create the android project.
+            projectBuilder.dest = path.join(projectBuilder.dest, "apk-build");
+
+            // Reset where we're going to get the image files from.
+            loader = require("./file-loader").create(extractDir);
+            projectBuilder.loader = loader;
+
+            // Use the zipfile's version of the manifest.
+            // TODO what if the manifest isn't valid?
+            var packageManifestData = loader.load("manifest.webapp");
+            manfest = JSON.parse(packageManifestData);
 
             create();
           }
@@ -138,6 +144,7 @@ _.extend(ApkGenerator.prototype, {
               cb(err, apkLoc);
             }
             if (!err) {
+              projectBuilder.dest = appBuildDir;
               projectBuilder.cleanup();
             }
           });
