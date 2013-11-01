@@ -5,7 +5,7 @@
 
     <uses-sdk
         android:minSdkVersion="8"
-        android:targetSdkVersion="17" />
+        android:targetSdkVersion="18" />
 
 {% for permission in permissions %}
     <uses-permission android:name="{{ permission }}"/>{% endfor %}
@@ -23,7 +23,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="org.mozilla.android.synthapk.InstallerActivity"
+            android:name="org.mozilla.android.synthapk.InstallRuntimeActivity"
             android:label="@string/title_activity_installer" >
         </activity>
 

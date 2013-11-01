@@ -20,20 +20,47 @@ public class LauncherActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(C.TAG, "Process pid=" + Process.myPid());
+        Log.i(C.TAG, "Package resource path is " + getPackageResourcePath());
+        Log.i(C.TAG, "Package     code path is " + getPackageCodePath());
+
+
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_launcher);
-        boolean success = startWebApp() || installWebApp();
+//        setContentView(R.layout.activity_launcher);
+        boolean success = startWebApp() || installRuntime();
 
         assert success;
     }
 
-    private boolean installWebApp() {
-        Intent intent = new Intent(getApplicationContext(), InstallerActivity.class);
-        startActivity(intent);
-        return true;
+    public boolean installRuntime() {
+        Intent intent = new Intent(getApplicationContext(), InstallRuntimeActivity.class);
+        if (isCallable(intent) > 0) {
+            startActivity(intent);
+            return true;
+        }
+        return false;
     }
 
-    public boolean startWebApp() {
+    private boolean startWebApp() {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.addCategory(Intent.CATEGORY_DEFAULT);
+
+        intent.setType(C.WEBAPP_MIMETYPE);
+
+        intent.putExtra(C.EXTRA_PACKAGE_NAME, getPackageName());
+
+        String iconUri = "android.resource://" + getPackageName() + "/drawable/ic_launcher";
+        Log.i(C.TAG, "Icon uri: " + iconUri);
+        intent.putExtra(C.EXTRA_ICON_URI, iconUri);
+
+        Logger.i("Installing and starting webapp " + getPackageName());
+        if (isCallable(intent) > 0) {
+            startActivity(intent);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean startWebApp1() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         String appUri = prefs.getString(C.APP_URI, null);
