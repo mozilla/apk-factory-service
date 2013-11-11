@@ -93,5 +93,7 @@ module.exports = {
     } else {
       return new FileLoader(prefix);
     }
-  }
+  },
+
+  ensureDirectoryExistsFor: ensureDirectoryExistsFor
 };

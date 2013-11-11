@@ -80,7 +80,9 @@ _.extend(ApkGenerator.prototype, {
         return;
       }
       try {
-        var manifest = JSON.parse(string);
+        var manifest = JSON.parse(string),
+            zipFileLocation,
+            miniManifest;
         if (!!manifest.package_path) {
           appType = "packaged";
         } else {
@@ -93,14 +95,25 @@ _.extend(ApkGenerator.prototype, {
           var extractDir = path.join(appBuildDir, "package");
           fs.mkdirRecursiveSync(extractDir);
 
+          zipFileLocation = path.join(appBuildDir, "application.zip");
 
           function fetchPackage() {
+            var writer = fs.createWriteStream(zipFileLocation, {
+                            flags: 'w',
+                            encoding: null,
+                            mode: 0666 }
+            );
+            writer.on("error", function(err) { console.error(err) });
+            writer.on("close", unzipPackage);
+            var packagePath = url.resolve(manifestUrl, manifest.package_path);
+            request(packagePath).pipe(writer);
+          }
+
+          function unzipPackage() {
             var extractPackage = unzip.Extract({ path: extractDir, verbose: false });
             extractPackage.on("error", function(err) { console.error(err) });
             extractPackage.on("close", onCloseExtractPackage);
-
-            var packagePath = url.resolve(manifestUrl, manifest.package_path);
-            request(packagePath).pipe(extractPackage);
+            fs.createReadStream(zipFileLocation).pipe(extractPackage);
           }
           fetchPackage();
 
@@ -116,6 +129,7 @@ _.extend(ApkGenerator.prototype, {
             // Use the zipfile's version of the manifest.
             // TODO what if the manifest isn't valid?
             var packageManifestData = loader.load("manifest.webapp");
+            miniManifest = manifest;
             manifest = JSON.parse(packageManifestData);
 
             create();
@@ -126,8 +140,17 @@ _.extend(ApkGenerator.prototype, {
           projectBuilder.create(manifestUrl, manifest, appType, onCreate);
         }
 
-        function onCreate(androidManifestProperties) {
+        function onCreate (androidManifestProperties) {
           console.log("Building " + androidManifestProperties.packageName + "-" + androidManifestProperties.version + ".apk (" + androidManifestProperties.versionCode + ") from " + manifestUrl);
+
+          if (zipFileLocation) {
+            var rawDir = path.join(projectBuilder.dest, "res/raw");
+            var newZipFileLocation = path.join(rawDir, "application.zip");
+            require("./file-loader").ensureDirectoryExistsFor(newZipFileLocation);
+            fs.renameSync(zipFileLocation, newZipFileLocation);
+
+            fs.writeFileSync(path.join(rawDir, "mini.json"), JSON.stringify(miniManifest));
+          }
 
           projectBuilder.build(self.createDir("keys"), function (err, apkLoc) {
 
@@ -149,7 +172,7 @@ _.extend(ApkGenerator.prototype, {
               projectBuilder.cleanup();
             }
           });
-        };
+        }
 
       } catch (e) {
         if (e.stack) {
