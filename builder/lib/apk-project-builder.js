@@ -135,6 +135,7 @@ _.extend(ApkProject.prototype, {
 
       self._templatize("build.xml", self._sanitize(stringsObj));
 
+      self.loader.write(path.join(self.dest, "res/raw/manifest.json"), JSON.stringify(manifest));
 
       var icons = manifest.icons || {};
       var iconsLeft = _.size(icons);
