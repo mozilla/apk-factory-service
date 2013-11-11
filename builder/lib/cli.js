@@ -14,11 +14,6 @@ var argv = optimist
     .option('overideManifest', {
         desc: "The URL or path to the manifest"
     })
-    .option('type', {
-        alias: "t",
-        desc: "The type of app (hosted or packaged; default: hosted)",
-        default: "hosted"
-    })
     .option('buildDir', {
         alias: "d",
         desc: "Use this directory as the temporary project directory",
@@ -31,11 +26,17 @@ var argv = optimist
     .option('force', {
         alias: "f",
         desc: "Force the projects to be built every time, i.e. don't rely on cached copies",
-        default: false
+        default: false,
+        boolean: true
     })
     .option("output", {
         alias: "o",
         desc: "The output APK filename"
+    })
+    .option("debug", {
+        desc: "Do not delete the project build directory",
+        default: false,
+        boolean: true
     })
     .option('help', {
         alias: "?",
@@ -58,7 +59,7 @@ var argv = optimist
     .argv;
 
 var ApkGenerator = require("./apk-generator").ApkGenerator,
-    generator = new ApkGenerator(argv.buildDir, argv.cacheDir, argv.force);
+    generator = new ApkGenerator(argv.buildDir, argv.cacheDir, argv.force, argv.debug);
 
 
 generator.generate(argv.manifest, argv.overideManifest, argv.type, function (err, apkLoc) {

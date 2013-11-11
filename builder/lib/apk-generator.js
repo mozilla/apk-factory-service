@@ -16,7 +16,7 @@ function createDir(defaultDir, dir) {
 }
 
 
-function ApkGenerator (buildDir, cacheDir, forceRebuild) {
+function ApkGenerator (buildDir, cacheDir, forceRebuild, debug) {
   this.buildDir = buildDir || process.env.TMPDIR;
   if (cacheDir) {
     this.cacheDir = path.resolve(process.cwd(), cacheDir);
@@ -24,6 +24,7 @@ function ApkGenerator (buildDir, cacheDir, forceRebuild) {
     this.cacheDir = path.resolve(__dirname, "..", "cache");
   }
   this.forceRebuild = forceRebuild;
+  this.debug = debug;
 
 }
 
@@ -126,7 +127,7 @@ _.extend(ApkGenerator.prototype, {
         }
 
         function onCreate(androidManifestProperties) {
-          console.log("Building " + androidManifestProperties.packageName + "-" + androidManifestProperties.version + " (" + androidManifestProperties.versionCode + ") from " + manifestUrl);
+          console.log("Building " + androidManifestProperties.packageName + "-" + androidManifestProperties.version + ".apk (" + androidManifestProperties.versionCode + ") from " + manifestUrl);
 
           projectBuilder.build(self.createDir("keys"), function (err, apkLoc) {
 
@@ -143,7 +144,7 @@ _.extend(ApkGenerator.prototype, {
             if (cb) {
               cb(err, apkLoc);
             }
-            if (!err) {
+            if (!err && !self.debug) {
               projectBuilder.dest = appBuildDir;
               projectBuilder.cleanup();
             }
