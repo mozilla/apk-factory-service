@@ -7,8 +7,6 @@ builddir=/tmp/android-projects
 
 ANDROID_HOME=$tools/android-sdk-linux
 
-node=/usr/bin/node
-
 android=$ANDROID_HOME/tools/android
 
 # update npm.
@@ -23,6 +21,6 @@ $android update project --path template
 
 
 # Restart the server.
-killall node 2>/dev/null 1>&2
+killall `which node` 2>/dev/null 1>&2
 PATH=$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools:$PATH
-$node lib/server.js -p 8080 -c $cache -d $builddir --force &
+/usr/bin/env node lib/server.js -p 8080 -c $cache -d $builddir --force &
