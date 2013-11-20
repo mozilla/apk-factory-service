@@ -16,8 +16,8 @@ npm install
 
 # Get the latest android-sdk installed,
 target=$($android list target | grep -o android-[0-9]* | tail -n 1)
-$android update project -s --path ../library --target $target
-$android update project --path template
+$android update project -s --path node_modules/apk-factory-library --target $target
+$android update project --path node_modules/apk-factory-library/template
 
 
 # Restart the server.

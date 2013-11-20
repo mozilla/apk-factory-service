@@ -1,6 +1,0 @@
-<resources>
-
-    <string name="app_name">"{{name}}"</string>
-    <string name="app_description">"{{description}}"</string>
-
-</resources>

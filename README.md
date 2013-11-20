@@ -10,3 +10,16 @@ dummy-fennec
 This is a simplistic host app that will be replaced by fennec.
 
 The synthetic APKs should be able to communicate with `dummy-fennec`.
+
+Work In Progress
+----------------
+
+In order to use this services, you must do the following:
+
+    cd apk-factory-libary
+    sudo npm link
+    cd ../apk-factory-service
+    sudo npm link ../apk-factory-library
+
+Until we publish apk-factory-library,
+you can use `npm link` to put it into the `node_modules` of this project.
