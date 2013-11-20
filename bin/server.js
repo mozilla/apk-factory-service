@@ -35,6 +35,11 @@ var argv = optimist
         desc: "Use this directory as the directory to cache keys and apks",
         default: env("STACKATO_FILESYSTEM_CACHE", "TMPDIR")
     })
+    .option('config-files', {
+        desc: "Use this list of config files for configuration",
+        default: process.env['CONFIG_FILES'] ||
+                 path.join(__dirname, '../config/default.js')
+    })
     .option('force', {
         alias: "f",
         desc: "Force the projects to be built every time, i.e. don't rely on cached copies",
@@ -65,6 +70,7 @@ var argv = optimist
     })
     .argv;
 
+var config = require('../lib/config')(argv['config-files']);
 
 var app = express();
 
