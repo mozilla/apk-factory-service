@@ -22,3 +22,4 @@ builder/node_modules
 builder/dir
 builder/cache
 .DS_Store
+*~
