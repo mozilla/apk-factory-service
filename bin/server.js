@@ -35,6 +35,11 @@ var argv = optimist
         desc: "Use this directory as the directory to cache keys and apks",
         default: env("STACKATO_FILESYSTEM_CACHE", "TMPDIR")
     })
+    .option('config-files', {
+        desc: "Use this list of config files for configuration",
+        default: process.env['CONFIG_FILES'] ||
+                 path.join(__dirname, '../config/default.js')
+    })
     .option('force', {
         alias: "f",
         desc: "Force the projects to be built every time, i.e. don't rely on cached copies",
@@ -65,56 +70,60 @@ var argv = optimist
     })
     .argv;
 
+// Allow command line argument to overwrite previous env var
+process.env['CONFIG_FILES'] = argv['config-files'];
 
-var app = express();
+require('../lib/config')(function (config) {
+  var app = express();
 
-// app.use(express.cookieParser());
-// app.use(express.session({
-//   secret: 'twegrergq25y345y245y'
-// }));
+  // app.use(express.cookieParser());
+  // app.use(express.session({
+  //   secret: 'twegrergq25y345y245y'
+  // }));
 
-//app.use("/client", express.static('client'));
+  //app.use("/client", express.static('client'));
 
-var appGenerator = function (request, response) {
+  var appGenerator = function (request, response) {
 
-  var generator = new ApkGenerator(argv.buildDir, argv.cacheDir, argv.force);
+    var generator = new ApkGenerator(argv.buildDir, argv.cacheDir, argv.force);
 
-  var manifestUrl = request.query.manifestUrl;
-  var appType = request.query.appType || "hosted";
+    var manifestUrl = request.query.manifestUrl;
+    var appType = request.query.appType || "hosted";
 
-  if (!manifestUrl) {    
-    response.send("A manifestUrl param is needed", 400);
-    return;
-  }
-
-  generator.generate(manifestUrl, null, appType, function (err, apkLoc) {
-    if (err) {
-      response.type("text/plain");
-      response.send(err.toString(), 400);
+    if (!manifestUrl) {    
+      response.send("A manifestUrl param is needed", 400);
       return;
     }
+
+    generator.generate(manifestUrl, null, appType, function (err, apkLoc) {
+      if (err) {
+	response.type("text/plain");
+	response.send(err.toString(), 400);
+	return;
+      }
+      response.status(200);
+      response.type("application/vnd.android.package-archive");
+      response.sendfile(apkLoc);
+    });
+
+  };
+
+
+  app.get('/application.apk', appGenerator);
+
+  var indexFile = function (request, response) {
     response.status(200);
-    response.type("application/vnd.android.package-archive");
-    response.sendfile(apkLoc);
-  });
-
-};
-
-
-app.get('/application.apk', appGenerator);
-
-var indexFile = function (request, response) {
-  response.status(200);
-  response.type("text/text");
-  response.send("200 Server OK");
-};
-app.get("/", indexFile);
-app.get("/index.html", indexFile);
+    response.type("text/text");
+    response.send("200 Server OK");
+  };
+  app.get("/", indexFile);
+  app.get("/index.html", indexFile);
 
 
-var port = argv.port;
-var host = process.env.VCAP_APP_HOST || "127.0.0.1";
+  var port = argv.port;
+  var host = process.env.VCAP_APP_HOST || "127.0.0.1";
 
-console.log("running on " + host + ":" + port);
+  console.log("running on " + host + ":" + port);
 
-app.listen(port);
+  app.listen(port);
+});
