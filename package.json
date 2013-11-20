@@ -9,7 +9,7 @@
   ],
   "private": true,
   "scripts": {
-    "test": "grunt",
+    "test": "tap test/*.js",
     "start": "node lib/server.js"
   },
   "devDependencies": {
