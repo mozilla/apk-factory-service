@@ -10,7 +10,7 @@ var express = require('express'),
 
 
 
-    ApkGenerator = require("./apk-generator").ApkGenerator;
+    ApkGenerator = require("../lib/apk-generator").ApkGenerator;
 
 function env (key) {
   var i=0, max=arguments.length, value;
