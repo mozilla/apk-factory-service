@@ -9,78 +9,17 @@ var express = require('express'),
     path = require("path"),
     _ = require("underscore"),
 
-    optimist = require("optimist"),
-
 
 
     ApkGenerator = require("../lib/apk-generator").ApkGenerator;
-
-function env (key) {
-  var i=0, max=arguments.length, value;
-  for ( ; i < max; i++) {
-    value = process.env[arguments[i]];
-    if (value) {
-      return value;
-    }
-  }
-}
-
-var argv = optimist
-    .usage('Usage: $0 {OPTIONS}')
-    .wrap(80)
-    .option('buildDir', {
-        alias: "d",
-        desc: "Use this directory as the temporary project directory",
-        default: env("STACKATO_FILESYSTEM_BUILD", "TMPDIR")
-    })
-    .option('cacheDir', {
-        alias: "c",
-        desc: "Use this directory as the directory to cache keys and apks",
-        default: env("STACKATO_FILESYSTEM_CACHE", "TMPDIR")
-    })
-    .option('config-files', {
-        desc: "Use this list of config files for configuration",
-        default: process.env['CONFIG_FILES'] ||
-                 path.join(__dirname, '../config/default.js')
-    })
-    .option('force', {
-        alias: "f",
-        desc: "Force the projects to be built every time, i.e. don't rely on cached copies",
-        default: false
-    })
-    .option('port', {
-        alias: "p",
-        desc: "Use the specific port to serve. This will override process.env.PORT.",
-        default: env("VCAP_APP_PORT", "PORT") || 8080
-    })
-    .option('help', {
-        alias: "?",
-        desc: "Display this message",
-        boolean: true
-    })
-    .check(function (argv) {
-        if (argv.help) {
-            throw "";
-        }
-
-        if (!argv.buildDir) {
-          throw "Must specify a build directory";
-        }
-
-        argv.buildDir = path.resolve(process.cwd(), argv.buildDir);
-        argv.cacheDir = path.resolve(process.cwd(), argv.cacheDir);
-
-    })
-    .argv;
-
-// Allow command line argument to overwrite previous env var
-process.env['CONFIG_FILES'] = argv['config-files'];
 
 require('../lib/config')(function (config) {
   var app = express();
   var appGenerator = function (request, response) {
 
-    var generator = new ApkGenerator(argv.buildDir, argv.cacheDir, argv.force);
+    var generator = new ApkGenerator(config.buildDir,
+                                     config.cacheDir,
+                                     config.force);
 
     var manifestUrl = request.query.manifestUrl;
     var appType = request.query.appType || "hosted";
@@ -114,11 +53,8 @@ require('../lib/config')(function (config) {
   app.get("/", indexFile);
   app.get("/index.html", indexFile);
 
+  console.log("running on " + config.bind_address + ":" +
+    config.server_port);
 
-  var port = argv.port;
-  var host = process.env.VCAP_APP_HOST || "127.0.0.1";
-
-  console.log("running on " + host + ":" + port);
-
-  app.listen(port);
+  app.listen(config.server_port, config.bind_address);
 });
