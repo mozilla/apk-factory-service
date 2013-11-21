@@ -1,6 +1,9 @@
-/**
- * Module dependencies.
- */
+#!/usr/bin/env node
+
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 var express = require('express'),
     url = require('url'),
     path = require("path"),
@@ -75,14 +78,6 @@ process.env['CONFIG_FILES'] = argv['config-files'];
 
 require('../lib/config')(function (config) {
   var app = express();
-
-  // app.use(express.cookieParser());
-  // app.use(express.session({
-  //   secret: 'twegrergq25y345y245y'
-  // }));
-
-  //app.use("/client", express.static('client'));
-
   var appGenerator = function (request, response) {
 
     var generator = new ApkGenerator(argv.buildDir, argv.cacheDir, argv.force);
