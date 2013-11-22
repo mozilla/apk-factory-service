@@ -9,9 +9,6 @@ var express = require('express'),
     url = require('url'),
     path = require("path"),
     _ = require("underscore"),
-
-
-
     ApkGenerator = require("../lib/apk-generator").ApkGenerator;
 
 require('../lib/config')(function (config) {
@@ -40,9 +37,7 @@ require('../lib/config')(function (config) {
       response.type("application/vnd.android.package-archive");
       response.sendfile(apkLoc);
     });
-
   };
-
 
   app.get('/application.apk', appGenerator);
 
@@ -54,8 +49,7 @@ require('../lib/config')(function (config) {
   app.get("/", indexFile);
   app.get("/index.html", indexFile);
 
-  log.info("running on " + config.bind_address + ":" +
-    config.server_port);
-
-  app.listen(config.server_port, config.bind_address);
+  app.listen(config.server_port, config.bind_address, function() {
+    log.info("running on " + config.bind_address + ":" + config.server_port);
+  });
 });
