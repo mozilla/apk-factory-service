@@ -9,6 +9,8 @@ var path = require('path');
 
 var tap = require('tap');
 
+process.env['FILESYSTEM_BUILD'] = '/tmp/test';
+
 tap.test("A single config works as expected", function(test) {
   process.env['CONFIG_FILES'] = 'does-not-exist.js';
   var config = require('../lib/config');

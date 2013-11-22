@@ -9,6 +9,8 @@ var path = require('path');
 
 var tap = require('tap');
 
+process.env['FILESYSTEM_BUILD'] = '/tmp/test';
+
 process.env['CONFIG_FILES'] = [
   path.join(__dirname, 'data', 'default_config.js'),
   path.join(__dirname, 'data', 'override_config.js')
@@ -22,7 +24,12 @@ tap.test("Multiple configs works as expected", function(test) {
       buz: 'baz',
       huh: undefined,
       animals: { cat: 'Snowball', dog: 'Spot', lamma: 'Rojer' },
-      bar: 42
+      bar: 42,
+      buildDir: "/tmp/test",
+      cacheDir: undefined,
+      force: undefined,
+      bind_address: undefined,
+      server_port:  undefined
     }, "Deep Equals of configuration object");
     test.end();
   });
