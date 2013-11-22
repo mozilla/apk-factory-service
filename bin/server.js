@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+var log = require('../lib/logging').logger;
 var express = require('express'),
     url = require('url'),
     path = require("path"),
@@ -53,7 +54,7 @@ require('../lib/config')(function (config) {
   app.get("/", indexFile);
   app.get("/index.html", indexFile);
 
-  console.log("running on " + config.bind_address + ":" +
+  log.info("running on " + config.bind_address + ":" +
     config.server_port);
 
   app.listen(config.server_port, config.bind_address);
