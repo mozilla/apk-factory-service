@@ -4,8 +4,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// Make sure logging is available for other modules
 var log = require('../lib/logging').logger;
-var express = require('express'),
+
+var buildQueue = require("../lib/build_queue"),
+    express = require('express'),
     url = require('url'),
     path = require("path"),
     _ = require("underscore"),
@@ -27,15 +30,19 @@ require('../lib/config')(function (config) {
       return;
     }
 
-    generator.generate(manifestUrl, null, appType, function (err, apkLoc) {
-      if (err) {
-	response.type("text/plain");
-	response.send(err.toString(), 400);
-	return;
-      }
-      response.status(200);
-      response.type("application/vnd.android.package-archive");
-      response.sendfile(apkLoc);
+    buildQueue(manifestUrl, function(finishedCb) {
+      generator.generate(manifestUrl, null, appType, function (err, apkLoc) {
+        if (err) {
+  	  response.type("text/plain");
+  	  response.send(err.toString(), 400);
+          finishedCb();
+  	  return;
+        }
+        response.status(200);
+        response.type("application/vnd.android.package-archive");
+        response.sendfile(apkLoc);
+        finishedCb();
+      });
     });
   };
 
