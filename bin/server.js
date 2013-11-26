@@ -4,15 +4,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Make sure logging is available for other modules
-var log = require('../lib/logging').logger;
+var path = require("path");
+var url = require('url');
 
-var buildQueue = require("../lib/build_queue"),
-    express = require('express'),
-    url = require('url'),
-    path = require("path"),
-    _ = require("underscore"),
-    ApkGenerator = require("../lib/apk-generator").ApkGenerator;
+var express = require('express');
+
+var _ = require("underscore");
+var ApkGenerator = require("../lib/apk-generator").ApkGenerator;
+var buildQueue = require("../lib/build_queue");
+var log = require('../lib/logging').logger;
 
 require('../lib/config')(function (config) {
   var app = express();
