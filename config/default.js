@@ -37,6 +37,7 @@ cacheDir = "/tmp/apk-cache";
 
 // Force the projects to be built every time, i.e. don't rely on cached copies
 // CLI argument: -f or --force
+// TODO rename this to forceRebuild or something
 force = false;
 
 // Use the specific ip address to listen for traffic on.
