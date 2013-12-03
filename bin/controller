@@ -60,8 +60,11 @@ require('../lib/config')(function(config) {
 
   app.get("/index.html", indexFile);
 
-  app.listen(config.server_port, config.bind_address, function() {
+  app.listen(config.controller_server_port,
+             config.bind_address,
+             function() {
     metrics.serverStarted();
-    log.info("running on " + config.bind_address + ":" + config.server_port);
+    log.info("running on " + config.bind_address + ":" +
+      config.controller_server_port);
   });
 });

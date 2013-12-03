@@ -44,10 +44,10 @@ force = false;
 // Env variable: BIND_ADDRESS
 bind_address = "127.0.0.1";
 
-// Use the specific port to serve.
+// Use the specific port for the front controller HTTP server
 // CLI argument: -p or --port
-// Env variable: SERVER_PORT
-server_port = 8080;
+// Env variable: CONTROLLER_SERVER_PORT
+controller_server_port = 8080;
 
 // CLI argument:
 // Env variable:

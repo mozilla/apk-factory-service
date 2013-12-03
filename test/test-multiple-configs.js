@@ -29,7 +29,7 @@ tap.test("Multiple configs works as expected", function(test) {
       cacheDir: undefined,
       force: undefined,
       bind_address: undefined,
-      server_port:  undefined
+      controller_server_port:  undefined
     }, "Deep Equals of configuration object");
     test.end();
   });
