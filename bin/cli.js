@@ -63,7 +63,7 @@ var argv = optimist
     })
     .argv;
 
-var ApkGenerator = require("../lib/apk-generator").ApkGenerator,
+var ApkGenerator = require("../lib/apk_generator").ApkGenerator,
     generator = new ApkGenerator(argv.buildDir, argv.cacheDir, argv.force, argv.debug);
 
 
