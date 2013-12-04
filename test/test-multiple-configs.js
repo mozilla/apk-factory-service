@@ -29,6 +29,7 @@ tap.test("Multiple configs works as expected", function(test) {
       buildDir: "/tmp/test",
       cacheDir: "/tmp/test",
       force: undefined,
+      debug: false,
       bind_address: undefined,
       controller_server_port:  undefined
     }, "Deep Equals of configuration object");
