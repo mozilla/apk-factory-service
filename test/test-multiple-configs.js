@@ -10,6 +10,7 @@ var path = require('path');
 var tap = require('tap');
 
 process.env['FILESYSTEM_BUILD'] = '/tmp/test';
+process.env['FILESYSTEM_CACHE'] = '/tmp/test';
 
 process.env['CONFIG_FILES'] = [
   path.join(__dirname, 'data', 'default_config.js'),
@@ -26,7 +27,7 @@ tap.test("Multiple configs works as expected", function(test) {
       animals: { cat: 'Snowball', dog: 'Spot', lamma: 'Rojer' },
       bar: 42,
       buildDir: "/tmp/test",
-      cacheDir: undefined,
+      cacheDir: "/tmp/test",
       force: undefined,
       bind_address: undefined,
       controller_server_port:  undefined
