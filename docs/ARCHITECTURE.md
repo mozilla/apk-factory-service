@@ -76,8 +76,24 @@ The client can then make a subsequent Install APK request.
 
 ## Build APK for Developer
 
+A developer will `npm install apk-service-factory` and then do a 
+command line build of an APK.
+
+TBD - this can be architectued in atleast 2 ways:
+1) CLI code runs OWA Downloader code and POSTS to the review instance to a special CLI build API
+2) CLI depends on ant and Android SDK. Portions of the server side codebase have CLI alternatives
+which all run locally. This can be used "offline".
+
 ## Implementation Details
 
-OWA Versions are useless
+Notes for background on why the current architecure exists.
 
-Builds lock on a per-manifest basis.
+OWA Versions aren't regulated in any way, so they aren't very useful to us.
+
+A request for an APK Install blocks on a per-manifest basis.
+So 4 concurrent requests will be queued up with the first request
+obtaining a lock and either returning a cached APK or doing the
+build. The 3 subsequent calls should should use the cache and return quickly.
+This lock in at the controller deamon, so N controller deamons will
+cause several concurrent writes to the S3 App Cache, which shouldn't be
+an issue. The main reason is to avoid concurrency issues in the ant build.
