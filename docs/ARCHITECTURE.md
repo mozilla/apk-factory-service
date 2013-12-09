@@ -64,6 +64,7 @@ Metadata stored in the APK Metadata DB:
 * current library version number
 
 version number is an arbitrary (controlled by the APK Factory Service) incrementing integer.
+It's really important that we don't lose the version number.
 
 library version number tracks the Apk Factory Library, the Java support code for APKs.
 If that version is bumped (say for an important security patch) this will cause
