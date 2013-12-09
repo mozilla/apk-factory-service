@@ -70,19 +70,19 @@ If that version is bumped (say for an important security patch) this will cause
 existing APKs to seem  out of date.
 
 If any of the digests or library version numbers are out of date,
-then the service resonds with that apps manifest url in it's output.
+then the service responds with that app's manifest url in its output.
 
 The client can then make a subsequent Install APK request.
 
 ## Build APK for Developer
 
-A developer will `npm install apk-service-factory` and then do a 
+A developer will `npm install apk-service-factory` and then do a
 command line build of an APK.
 
-TBD - this can be architectued in atleast 2 ways:
-1) CLI code runs OWA Downloader code and POSTS to the review instance to a special CLI build API
-2) CLI depends on ant and Android SDK. Portions of the server side codebase have CLI alternatives
-which all run locally. This can be used "offline".
+TBD - this can be architected in at least 2 ways:
+
+1. CLI code runs OWA Downloader code and POSTS to the review instance to a special CLI build API
+2. CLI depends on ant and Android SDK. Portions of the server side codebase have CLI alternatives which all run locally. This can be used "offline".
 
 ## Implementation Details
 
