@@ -23,4 +23,4 @@ $android update project --path node_modules/apk-factory-library/template
 # Restart the server.
 killall `which node` 2>/dev/null 1>&2
 PATH=$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools:$PATH
-/usr/bin/env node bin/server.js -p 8001 -c $cache -d $builddir --force --config-files=config/default.js,config/production.js &
+/usr/bin/env node bin/controller -p 8001 -c $cache -d $builddir --force --config-files=config/default.js,config/production.js &

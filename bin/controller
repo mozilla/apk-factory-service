@@ -1,0 +1,62 @@
+#!/usr/bin/env node
+
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+var express = require('express');
+var toobusy = require('../lib/busy_middleware.js');
+
+var frontController = require('../lib/front_controller');
+var log = require('../lib/logging').logger;
+var metrics = require('../lib/metrics');
+var withConfig = require('../lib/config');
+
+withConfig(function(config) {
+  var app = express();
+
+  // Send 5xx if server is overloaded
+  app.use(toobusy);
+
+  app.get('/application.apk', function(req, res) {
+    var start = new Date();
+
+    var manifestUrl = req.query.manifestUrl;
+    var appType = req.query.appType || "hosted";
+
+    if (!manifestUrl) {
+      metrics.badManifestUrl();
+      res.send("A manifestUrl param is needed", 400);
+      return;
+    }
+
+    metrics.generateApkRequest(manifestUrl);
+
+    frontController(manifestUrl, appType, config, function(err, apkLoc) {
+      if (err) {
+	res.type("text/plain");
+	res.send(err.toString(), 400);
+	metrics.generationApkFailed();
+	return;
+      }
+      res.status(200);
+      res.type("application/vnd.android.package-archive");
+      res.sendfile(apkLoc);
+      metrics.generationApkFinished(new Date() - start);
+    });
+  });
+
+  app.get("/", function(req, res) {
+    res.status(200);
+    res.type("text/text");
+    res.send("200 Server OK");
+  });
+
+  app.listen(config.controller_server_port,
+             config.bind_address,
+             function() {
+	       metrics.serverStarted();
+	       log.info("running on " + config.bind_address + ":" +
+			config.controller_server_port);
+	     });
+});
