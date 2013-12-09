@@ -24,6 +24,7 @@ tap.test("A single config works as expected", function(test) {
       bar: 42,
       buildDir: "/tmp/test",
       cacheDir: "/tmp/test",
+      keysDir: "/tmp/test/keys",
       force: undefined,
       debug: false,
       bind_address: undefined,
