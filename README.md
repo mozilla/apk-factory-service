@@ -19,6 +19,8 @@ Dependencies
 
     sudo apt-get install graphicsmagick
 
+[![Build Status](https://travis-ci.org/mozilla/apk-factory-service.png)](https://travis-ci.org/mozilla/apk-factory-service)
+
 Work In Progress
 ----------------
 
