@@ -1,0 +1,15 @@
+before_install:
+ - sudo apt-get update -qq
+ - sudo apt-get install -qq graphicsmagick
+
+language: node_js
+
+node_js:
+ - "0.10"
+
+notifications:
+  irc:
+    channels:
+      - "irc.mozilla.org#mobile"
+    use_notice: false
+    skip_join: false
