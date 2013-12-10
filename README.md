@@ -11,6 +11,14 @@ This is a simplistic host app that will be replaced by fennec.
 
 The synthetic APKs should be able to communicate with `dummy-fennec`.
 
+Dependencies
+------------
+
+* GraphicsMagick
+* MySQL
+
+    sudo apt-get install graphicsmagick
+
 Work In Progress
 ----------------
 
