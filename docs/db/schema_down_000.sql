@@ -1,0 +1,1 @@
+DROP DATABASE apk_factory; 
