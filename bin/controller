@@ -7,6 +7,7 @@
 var express = require('express');
 var toobusy = require('../lib/busy_middleware.js');
 
+var apkUpdates = require('../lib/apk_updates');
 var frontController = require('../lib/front_controller');
 var log = require('../lib/logging').logger;
 var metrics = require('../lib/metrics');
@@ -17,6 +18,8 @@ withConfig(function(config) {
 
   // Send 5xx if server is overloaded
   app.use(toobusy);
+
+  app.use(express.bodyParser());
 
   app.get('/application.apk', function(req, res) {
     var start = new Date();
@@ -42,6 +45,18 @@ withConfig(function(config) {
       res.status(200);
       res.type("application/vnd.android.package-archive");
       res.sendfile(apkLoc);
+      metrics.generationApkFinished(new Date() - start);
+    });
+  });
+
+  app.post('/app_updates', function(req, res) {
+    var start = new Date();
+    console.log(typeof req.body, req.body);
+    apkUpdates(req.body, function(err, outdated) {
+      res.set('Content-Type', 'application/json');
+      res.send(JSON.stringify({
+        outdated: outdated
+      }));
       metrics.generationApkFinished(new Date() - start);
     });
   });
