@@ -37,10 +37,10 @@ withConfig(function(config) {
 
     frontController(manifestUrl, appType, config, function(err, apkLoc) {
       if (err) {
-	res.type("text/plain");
-	res.send(err.toString(), 400);
-	metrics.generationApkFailed();
-	return;
+        res.type("text/plain");
+        res.send(err.toString(), 400);
+        metrics.generationApkFailed();
+        return;
       }
       res.status(200);
       res.type("application/vnd.android.package-archive");
@@ -70,8 +70,8 @@ withConfig(function(config) {
   app.listen(config.controller_server_port,
              config.bind_address,
              function() {
-	       metrics.serverStarted();
-	       log.info("running on " + config.bind_address + ":" +
-			config.controller_server_port);
-	     });
+               metrics.serverStarted();
+               log.info("running on " + config.bind_address + ":" +
+                        config.controller_server_port);
+             });
 });
