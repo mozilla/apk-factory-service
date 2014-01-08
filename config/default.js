@@ -54,3 +54,12 @@ controller_server_port = 8080;
 
 // CLI argument:
 // Env variable:
+
+
+// MySQL
+mysql = {
+  host: 'localhost',
+  user: 'apk',
+  password: 'password',
+  database: 'apk_factory'
+}
