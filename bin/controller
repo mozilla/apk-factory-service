@@ -51,8 +51,7 @@ withConfig(function(config) {
 
   app.post('/app_updates', function(req, res) {
     var start = new Date();
-    console.log(typeof req.body, req.body);
-    apkUpdates(req.body, function(err, outdated) {
+    apkUpdates(req.body, config, function(err, outdated) {
       res.set('Content-Type', 'application/json');
       res.send(JSON.stringify({
         outdated: outdated
