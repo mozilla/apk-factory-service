@@ -1,6 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 
+var fsExtra = require('fs.extra');
 var tap = require('tap');
 
 var icon = require('../lib/android_icon');
@@ -26,14 +27,19 @@ const data = [
 tap.test("Given OWA Icons, we can produce Android compatible Icons", function(test) {
   var pathPrefix = path.join(__dirname, 'data', 'android-icon', 'reference');
   var goldenPrefix = path.join(__dirname, 'data', 'android-icon', 'golden');
-  var tmp =  path.join(__dirname, 'data', 'android-icon');
+  var tmp =  path.join(__dirname, 'data', 'android-icon', 'tmp');
+  try {
+    fs.mkdirSync(tmp);
+  } catch (e) {}
   var i=0;
   var end = function(x) {
     return function () {
                     setTimeout(function() {
 		      console.log('Going here', x);
   		      if (0 === x) {
-			test.end();
+                        fsExtra.rmrf(tmp, function() {
+			  test.end();
+			});
 		      }
 		    }, 100);
     };
