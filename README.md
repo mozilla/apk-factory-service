@@ -44,6 +44,11 @@ Some notes on how its process is started up:
     CONFIG_FILES='/home/ubuntu/apk-factory-service/config/default.js,/home/ubuntu/apk-factory-service/config/aws.js' \
     forever start bin/controller
 
+Command Line Interface
+----------------------
+
+    node bin/cli.js
+
 Work In Progress
 ----------------
 
