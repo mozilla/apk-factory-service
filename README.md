@@ -31,8 +31,11 @@ Installation
     # See an alternative to this line in the Work In Progress section below.
     cd node_modules && git clone https://github.com/mozilla/apk-factory-library.git
 
+    # Create the database and an *apk* user with privileges on it.
     mysql.server start
     mysql -u root < docs/db/schema_up_000.sql
+    mysql -u root -e "CREATE USER 'apk'@'localhost' IDENTIFIED BY 'password';"
+    mysql -u root -e "GRANT ALL PRIVILEGES ON apk_factory.* TO 'apk'@'localhost';"
 
 Deployment
 ----------
