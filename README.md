@@ -5,12 +5,6 @@ Web service which takes Open Web App manifests and produces Synthetic APKs.
 
 This service depends on [APK Factory Library](https://github.com/mozilla/apk-factory-library).
 
-dummy-fennec
-------------
-This is a simplistic host app that will be replaced by fennec.
-
-The synthetic APKs should be able to communicate with `dummy-fennec`.
-
 Dependencies
 ------------
 
