@@ -28,7 +28,9 @@ Mac OS X with brew:
 Installation
 ------------
 
+    # See an alternative to this line in the Work In Progress section below.
     cd node_modules && git clone https://github.com/mozilla/apk-factory-library.git
+
     mysql -u foo -ppassword < docs/db/schema_up_000.sql
 
 Deployment
@@ -52,4 +54,4 @@ In order to hack on this service and the library, you must do the following:
     cd ../apk-factory-service
     sudo npm link ../apk-factory-library
 
-Otherwise you can just use the git clone step from the Install docs above.
+Otherwise you can just use the `git clone` step from the Installation section above.
