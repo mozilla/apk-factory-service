@@ -5,21 +5,25 @@ Web service which takes Open Web App manifests and produces Synthetic APKs.
 
 This service depends on [APK Factory Library](https://github.com/mozilla/apk-factory-library).
 
+[![Build Status](https://travis-ci.org/mozilla/apk-factory-service.png)](https://travis-ci.org/mozilla/apk-factory-service)
+
 Dependencies
 ------------
 
 * GraphicsMagick
 * MySQL
 * Java 7
-* Ant
+* Ant (from the Android SDK)
+
+APT-based Linux:
 
     sudo apt-get install graphicsmagick mysql-server
-
-Android SDK requires
-
+    # Android SDK also requires:
     sudo apt-get install openjdk-7-jdk ant ia32-libs
 
-[![Build Status](https://travis-ci.org/mozilla/apk-factory-service.png)](https://travis-ci.org/mozilla/apk-factory-service)
+Mac OS X with brew:
+
+    brew install graphicsmagick mariadb
 
 Installation
 ------------
