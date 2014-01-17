@@ -38,7 +38,7 @@ Deployment
 
 A development server is available at http://dapk.net.
 
-Some notes on how it's process is started up:
+Some notes on how its process is started up:
 
     ANDROID_HOME=/data/android-sdk-linux \
     CONFIG_FILES='/home/ubuntu/apk-factory-service/config/default.js,/home/ubuntu/apk-factory-service/config/aws.js' \
