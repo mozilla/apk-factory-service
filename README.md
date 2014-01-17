@@ -31,7 +31,8 @@ Installation
     # See an alternative to this line in the Work In Progress section below.
     cd node_modules && git clone https://github.com/mozilla/apk-factory-library.git
 
-    mysql -u foo -ppassword < docs/db/schema_up_000.sql
+    mysql.server start
+    mysql -u root < docs/db/schema_up_000.sql
 
 Deployment
 ----------
