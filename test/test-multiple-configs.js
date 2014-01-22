@@ -32,7 +32,9 @@ tap.test("Multiple configs works as expected", function(test) {
       force: undefined,
       debug: false,
       bind_address: undefined,
-      controller_server_port:  undefined
+      controller_server_port:  undefined,
+      generator_server_hostname:  undefined,
+      generator_server_port:  undefined
     }, "Deep Equals of configuration object");
     test.end();
   });
