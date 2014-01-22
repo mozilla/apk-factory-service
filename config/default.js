@@ -1,5 +1,4 @@
 /*
-01234567890123456789012345678901234567890123456789012345678901234567890123456789
 APK Factory Service configuration.
 
 This file documents all of the possible configuration parameters for this
@@ -24,6 +23,9 @@ CLI arguments overwrite environment variables.
 Environment variables overwrite config file variables.
 
 */
+
+// One of development, review or release
+environment = "development";
 
 // Use this directory as the temporary project directory
 // CLI argument: -d or --buildDir
@@ -60,11 +62,14 @@ generator_server_port = 8081;
 generator_server_hostname = '127.0.0.1';
 
 
-// CLI argument:
-// Env variable:
+// CLI argument: --aws-access-key-id
+// Env variable: AWS_ACCESS_KEY_ID
+awsAccessKeyId = 'SETME';
 
-// CLI argument:
-// Env variable:
+// CLI argument: --aws-secret-access-key
+// Env variable: AWS_SECRET_ACCESS_KEY
+awsSecretAccessKey = 'SETME';
+
 
 
 // MySQL

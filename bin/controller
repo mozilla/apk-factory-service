@@ -35,16 +35,16 @@ withConfig(function(config) {
 
     metrics.generateApkRequest(manifestUrl);
 
-    frontController(manifestUrl, appType, config, function(err, apkLoc) {
+    frontController(manifestUrl, appType, config, function(err, apk) {
       if (err) {
         res.type("text/plain");
-        res.send(err.toString(), 400);
+        res.send(400, err.toString());
         metrics.generationApkFailed();
         return;
       }
-      res.status(200);
       res.type("application/vnd.android.package-archive");
-      res.sendfile(apkLoc);
+      res.status(200);
+      res.send(apk.Body);
       metrics.generationApkFinished(new Date() - start);
     });
   });
@@ -72,5 +72,7 @@ withConfig(function(config) {
       metrics.serverStarted('controller');
       log.info("controller running on " + config.bind_address + ":" +
         config.controller_server_port);
+      log.info("talking to " + config.generator_server_hostname + ":" +
+        config.generator_server_port);
     });
 });
