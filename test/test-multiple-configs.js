@@ -34,7 +34,9 @@ tap.test("Multiple configs works as expected", function(test) {
       bind_address: undefined,
       controller_server_port:  undefined,
       generator_server_hostname:  undefined,
-      generator_server_port:  undefined
+      generator_server_port:  undefined,
+      awsAccessKeyId: undefined,
+      awsSecretAccessKey: undefined
     }, "Deep Equals of configuration object");
     test.end();
   });
