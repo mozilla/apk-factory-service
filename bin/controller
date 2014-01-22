@@ -67,10 +67,10 @@ withConfig(function(config) {
   });
 
   app.listen(config.controller_server_port,
-             config.bind_address,
-             function() {
-               metrics.serverStarted();
-               log.info("running on " + config.bind_address + ":" +
-                        config.controller_server_port);
-             });
+    config.bind_address,
+    function() {
+      metrics.serverStarted('controller');
+      log.info("controller running on " + config.bind_address + ":" +
+        config.controller_server_port);
+    });
 });

@@ -45,9 +45,20 @@ force = false;
 bind_address = "127.0.0.1";
 
 // Use the specific port for the front controller HTTP server
-// CLI argument: -p or --port
+// CLI argument: -p or --controller-port
 // Env variable: CONTROLLER_SERVER_PORT
 controller_server_port = 8080;
+
+// Use the specific port for the generator HTTP server
+// CLI argument: --generator-port
+// Env variable: GENERATOR_SERVER_PORT
+generator_server_port = 8081;
+
+// Use this hostname for the generator HTTP server
+// CLI argument: -g or --generator-hostname
+// Env variable: GENERATOR_SERVER_HOSTNAME
+generator_server_hostname = '127.0.0.1';
+
 
 // CLI argument:
 // Env variable:
