@@ -73,17 +73,17 @@ var withConfig = require('../lib/config');
 withConfig(function(config) {
 
   var manifestUrl = argv.overideManifest || argv.manifest;
-  frontController(manifestUrl, argv.type, config, function(err, apkLoc) {
+  frontController(manifestUrl, argv.type, config, function(err, apk) {
     var output;
     if (!err) {
       if (argv.output) {
         output = path.resolve(process.cwd(), argv.output);
-        if (fs.existsSync(output)) {
-          fs.unlinkSync(output);
-        }
-        fs.linkSync(apkLoc, output);
+        console.log('Writing', output);
+        fs.writeFile(output, apk.Body, {encoding: null}, function(err) {
+          console.log(err);
+        });
       } else {
-        console.log('Build ', apkLoc);
+        console.log(apk.Body);
       }
     } else {
       console.error(err);
