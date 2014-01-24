@@ -37,6 +37,21 @@ Installation
     mysql -u root -e "CREATE USER 'apk'@'localhost' IDENTIFIED BY 'password';"
     mysql -u root -e "GRANT ALL PRIVILEGES ON apk_factory.* TO 'apk'@'localhost';"
 
+Testing
+-------
+
+Unit tests
+
+    $ npm test
+
+Integration tests
+
+     $ ./node_modules/.bin/tap int-test/integration-test.js
+
+or to target a different environment
+
+     $ APK_ENDPOINT='http://dapk.net' tap int-test/integration-test.js
+
 Deployment
 ----------
 
