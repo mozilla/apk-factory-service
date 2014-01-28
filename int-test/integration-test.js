@@ -7,7 +7,7 @@
  $ APK_ENDPOINT='http://dapk.net' tap int-test/integration-test.js
 
 */
-var exec = require('child_process').exec
+var exec = require('child_process').exec;
 var fs = require('fs');
 
 var mysql = require('mysql');
@@ -48,13 +48,13 @@ require('../lib/config')(function(config) {
         try {
           conn.connect();
           conn.query('DELETE FROM apk_metadata', [],
-                     function(err, rows, fields) {
-		       conn.end();
-		       that(err);
-		     });
+                     function(err/*, rows, fields*/) {
+                        conn.end();
+                        that(err);
+                      });
         } catch(e) {
           console.error(e);
-          that(err);
+          that(e);
         }
       },
       function curl1(err) {

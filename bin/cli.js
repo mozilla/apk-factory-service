@@ -9,7 +9,6 @@ var optimist = require("optimist"),
   path = require("path"),
   fs = require("fs");
 
-var ApkGenerator = require("../lib/apk_generator").ApkGenerator;
 var frontController = require('../lib/front_controller');
 
 var argv = optimist
