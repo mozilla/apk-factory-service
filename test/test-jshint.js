@@ -10,8 +10,6 @@ var path = require('path');
 var jshint = require('jshint').JSHINT;
 var tap = require('tap');
 
-var __dirname = '/home/ozten/apk-factory-service/test/';
-
 var libRc = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '.jshintrc')).toString());
 var r;
 
