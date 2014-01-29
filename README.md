@@ -14,12 +14,13 @@ Dependencies
 * MySQL
 * Java 7
 * Ant (from the Android SDK)
+* unzip (UnZip, by Info-ZIP will work)
 
 APT-based Linux:
 
     sudo apt-get install graphicsmagick mysql-server
     # Android SDK also requires:
-    sudo apt-get install openjdk-7-jdk ant ia32-libs
+    sudo apt-get install openjdk-7-jdk ant ia32-libs unzip
 
 Mac OS X with brew:
 
