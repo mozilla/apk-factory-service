@@ -22,19 +22,9 @@ withConfig(function(config) {
   app.use(function(req, res, next) {
     if ('/build' === req.path) {
       var post = req.body;
-      console.log('I See a request...', typeof req.body);
-      console.log(Object.keys(req.body));
 
-      console.log(Object.keys(req.body.manifest));
       if (! post.manifest.url) throw new Error('missing url');
-      generator.generate(post.manifest, post.zip, post.loadDir,
-                         function(err, zipFileLocation) {
-                            res.set('Content-Type', 'application/json');
-                            res.send({
-                              status: "okay",
-                              zipFileLocation: zipFileLocation
-                            });
-                          });
+      generator.generate(post.manifest, post.zip, post.loadDir, genCb(res));
 
     } else {
       console.log('Huh', req);
@@ -48,6 +38,23 @@ withConfig(function(config) {
              function() {
                 metrics.serverStarted('generator');
                 log.info("generator running on " + config.bind_address + ":" +
-                         config.generator_server_port);
+                        config.generator_server_port);
               });
 });
+
+function genCb(res) {
+  return function (err, zipFileLocation) {
+    res.set('Content-Type', 'application/json');
+    if (err) {
+      res.send({
+        status: "error",
+        message: err
+      });
+    } else {
+      res.send({
+        status: "okay",
+        zipFileLocation: zipFileLocation
+      });
+    }        
+  };
+}
