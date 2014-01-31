@@ -38,6 +38,11 @@ Installation
     mysql -u root -e "CREATE USER 'apk'@'localhost' IDENTIFIED BY 'password';"
     mysql -u root -e "GRANT ALL PRIVILEGES ON apk_factory.* TO 'apk'@'localhost';"
 
+[Notes on Android SDK](https://wiki.mozilla.org/Mobile/Fennec/Android#Install_Android_SDK)
+
+Please read [config/default.js](config/default.js) which documents the various
+configuration paramters and allowable values.
+
 Testing
 -------
 

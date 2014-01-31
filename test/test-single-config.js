@@ -36,7 +36,8 @@ tap.test("A single config works as expected", function(test) {
       generator_server_hostname: undefined,
       generator_server_port: undefined,
       awsAccessKeyId: undefined,
-      awsSecretAccessKey: undefined
+      awsSecretAccessKey: undefined,
+      varPath: '/tmp/var'
 
     }, "Deep Equals of configuration object");
     test.end();

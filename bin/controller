@@ -4,16 +4,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+process.env.PROCESS_TYPE = 'apk-controller';
+
 var express = require('express');
 var toobusy = require('../lib/busy_middleware.js');
 
 var apkUpdates = require('../lib/apk_updates');
 var frontController = require('../lib/front_controller');
-var log = require('../lib/logging').logger;
 var metrics = require('../lib/metrics');
 var withConfig = require('../lib/config');
 
 withConfig(function(config) {
+  var log = require('../lib/logging')(config);
   var app = express();
 
   // Send 5xx if server is overloaded
