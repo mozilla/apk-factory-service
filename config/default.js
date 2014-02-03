@@ -70,7 +70,8 @@ awsAccessKeyId = 'SETME';
 // Env variable: AWS_SECRET_ACCESS_KEY
 awsSecretAccessKey = 'SETME';
 
-
+// Logging defaults to creating a var dir in the top level of this project
+varPath = './var';
 
 // MySQL
 mysql = {
