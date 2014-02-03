@@ -7,6 +7,7 @@
 process.env.PROCESS_TYPE = 'apk-generator';
 
 var express = require('express');
+var hawk = require('hawk');
 var toobusy = require('../lib/busy_middleware.js');
 
 var ApkGenerator = require('../lib/apk_generator').ApkGenerator;
@@ -29,11 +30,20 @@ withConfig(function(config) {
 
   app.use(function(req, res, next) {
     if ('/build' === req.path) {
-      var post = req.body;
+      hawk.server.authenticate(req, function(id, cb) {
+        cb(null, config.hawk);
+      }, {}, function(err) {
+        if(err) {
+          console.log('Bad hawk credentails');
+          console.error(err);
+          res.send('Access denied', 401);
+          return;
+        }
+        var post = req.body;
 
-      if (! post.manifest.url) throw new Error('missing url');
-      generator.generate(post.manifest, post.zip, post.loadDir, genCb(res));
-
+        if (! post.manifest.url) throw new Error('missing url');
+        generator.generate(post.manifest, post.zip, post.loadDir, genCb(res));
+      });
     } else {
       console.log('Huh', req);
       next();

@@ -80,3 +80,10 @@ mysql = {
   password: 'password',
   database: 'apk_factory'
 }
+
+// Hawk authentication
+hawk = {
+  key: 'foobar',
+  algorithm: 'sha256',
+  id: 'apk-factory'
+}
