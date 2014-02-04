@@ -29,8 +29,8 @@ Mac OS X with brew:
 Installation
 ------------
 
-    # See an alternative to this line in the Work In Progress section below.
-    cd node_modules && git clone https://github.com/mozilla/apk-factory-library.git
+    # Clone apk-factory-library
+    cd lib/ext && git clone https://github.com/mozilla/apk-factory-library.git
 
     # Create the database and an *apk* user with privileges on it.
     mysql.server start
@@ -52,7 +52,7 @@ Unit tests
 
 Integration tests
 
-     $ ./node_modules/.bin/tap int-test/integration-test.js
+     $ ./node_modules/.bin/tap --timeout=120 int-test/integration-test.js
 
 or to target a different environment
 
@@ -74,14 +74,3 @@ Command Line Interface
 
     node bin/cli.js
 
-Work In Progress
-----------------
-
-In order to hack on this service and the library, you must do the following:
-
-    cd apk-factory-libary
-    sudo npm link
-    cd ../apk-factory-service
-    sudo npm link ../apk-factory-library
-
-Otherwise you can just use the `git clone` step from the Installation section above.

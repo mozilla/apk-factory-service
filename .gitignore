@@ -21,6 +21,7 @@ config/developer.js
 
 # NPM modules
 node_modules
+lib/ext/apk-factory-library
 
 # Mac filesystem metadata
 .DS_Store
