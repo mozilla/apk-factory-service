@@ -82,7 +82,7 @@ withConfig(function(config) {
           console.log(err);
         });
       } else {
-        console.log(apk.Body);
+        console.log(new Buffer(apk.Body).toString(null));
       }
     } else {
       console.error(err);
