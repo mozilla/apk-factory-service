@@ -13,7 +13,9 @@ build_rpm() {
     local package_file="${1}"
     local ref=$(cd "${ROOT}"; git rev-parse --short=12 HEAD)
 
+    # update apk-factory-library    
     pushd lib/ext 
+    rm -rf apk-factory-library
     git clone https://github.com/mozilla/apk-factory-library.git
     popd 
 
