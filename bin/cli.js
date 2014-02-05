@@ -5,45 +5,27 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 "use strict";
-var optimist = require("optimist"),
-  path = require("path"),
-  fs = require("fs");
 
+var fs = require('fs');
+var path = require('path');
+var url = require('url');
+
+var optimist = require('optimist');
+var request = require('request');
+
+var fileLoader = require('../lib/file_loader');
 var frontController = require('../lib/front_controller');
+var owaDownloader = require('../lib/owa_downloader');
 
 var argv = optimist
   .usage('Usage: $0 {OPTIONS}')
   .wrap(80)
-  .option('manifest', {
-    alias: "m",
-    desc: "The URL or path to the manifest"
-  })
   .option('overideManifest', {
     desc: "The URL or path to the manifest"
   })
-  .option('buildDir', {
-    alias: "d",
-    desc: "Use this directory as the temporary project directory",
-    default: path.resolve(process.env.TMPDIR || process.cwd(), "app")
-  })
-  .option('cacheDir', {
-    alias: "c",
-    desc: "Use this directory as the directory to cache keys and apks"
-  })
-  .option('force', {
-    alias: "f",
-    desc: "Force the projects to be built every time, i.e. don't rely on cached copies",
-    default: false,
-    boolean: true
-  })
-  .option("output", {
-    alias: "o",
-    desc: "The output APK filename"
-  })
-  .option("debug", {
-    desc: "Do not delete the project build directory",
-    default: false,
-    boolean: true
+  .option('endpoint', {
+    desc: "The URL for the APK Factory Service",
+  default: "https://apk-review.mozilla.org"
   })
   .option('help', {
     alias: "?",
@@ -53,39 +35,89 @@ var argv = optimist
   .check(function(argv) {
     if (argv.help) {
       throw "";
+    } else if (argv._.length < 2) {
+      throw "";
     }
-
-    if (!argv.manifest) {
-      throw "Must specify a manifest location";
+    argv.manifest = argv._[0];
+    argv.output = argv._[1];
+    if (-1 === argv.manifest.indexOf('://')) {
+      if (! argv.overideManifest) {
+        console.log('local manifest file should be used with --overideManifest option');
+        argv.help();
+        process.exit(1);
+      }
     }
-
-
-    argv.buildDir = path.resolve(process.cwd(), argv.buildDir);
-
   })
   .argv;
 
+require('../lib/config')(function(config) {
+  // manifest is used for owaDownloader
+  var manifestUrl = argv.manifest;
+  var loaderDirname;
 
+  if (/^\w+:\/\//.test(manifestUrl)) {
+    loaderDirname = url.resolve(manifestUrl, ".");
+  } else {
+    loaderDirname = path.dirname(path.resolve(process.cwd(), manifestUrl));
+    console.log('loaderDirname', loaderDirname);
+  }
 
-var withConfig = require('../lib/config');
+  var loader = fileLoader.create(loaderDirname);
 
-withConfig(function(config) {
+  // TODO AOK refactor and remove app Build Dir
+  var appBuildDir = '';
+  owaDownloader(argv.manifest, argv.overideManifest, loader, appBuildDir, owaCb);
 
-  var manifestUrl = argv.overideManifest || argv.manifest;
-  frontController(manifestUrl, argv.type, config, function(err, apk) {
-    var output;
-    if (!err) {
-      if (argv.output) {
-        output = path.resolve(process.cwd(), argv.output);
-        console.log('Writing', output);
-        fs.writeFile(output, apk.Body, {encoding: null}, function(err) {
-          console.log(err);
-        });
+  function owaCb(err, manifest, appType, zip) {
+    if (err) {
+      return console.error(err);
+      process.exit(1);
+    }
+    if (!! argv.overideManifest) {
+      manifestUrl = argv.overideManifest;
+    }
+    cliClient(manifestUrl, manifest, zip, argv, function(err, apk) {
+      var output;
+      if (!err) {
+        if (argv.output) {
+          output = path.resolve(process.cwd(), argv.output);
+          fs.writeFile(output, apk, {encoding: 'binary'}, function(err) {
+            if (err) {
+              console.log(err);
+              process.exit(1);
+            }
+          });
+        }
       } else {
-        console.log(new Buffer(apk.Body).toString(null));
+        console.error(err);
       }
+    });
+  }
+});
+
+function cliClient(manifestUrl, manifest, zip, argv, cb) {
+  var body = JSON.stringify({
+    manifestUrl: manifestUrl,
+    manifest: manifest,
+    packageZip: zip
+  });
+  request({
+    url: argv.endpoint + '/cli_build',
+    method: 'POST',
+    body: body,
+    headers: {
+      "Content-Type": "application/json"
+    }
+  }, function(err, res, body) {
+    if (err || 200 !== res.statusCode) {
+      cb(err || 'Generator response status code was ' + res.statusCode);
     } else {
-      console.error(err);
+      var data = JSON.parse(body);
+      if ('okay' === data.status) {
+        cb(null, new Buffer(data.apk, 'base64').toString('binary'));
+      } else {
+        cb('Error in generator - ' + body);      
+      }
     }
   });
-});
+}

@@ -10,11 +10,13 @@ var express = require('express');
 var toobusy = require('../lib/busy_middleware.js');
 
 var apkUpdates = require('../lib/apk_updates');
+var cliDevBuild = require('../lib/cli_dev_build');
 var frontController = require('../lib/front_controller');
 var metrics = require('../lib/metrics');
 var withConfig = require('../lib/config');
 
 withConfig(function(config) {
+  console.log(config);
   var log = require('../lib/logging')(config);
   var app = express();
 
@@ -62,6 +64,25 @@ withConfig(function(config) {
     });
   });
 
+  if (['development', 'review'].indexOf(config.environment) !== -1) {
+    app.post('/cli_build', function(req, res) {
+      cliDevBuild(req.body, config, function(err, apk) {
+        var status = 'okay';
+        var msg = '';
+        if (err) {
+          status = 'error';
+          msg = err;
+        }
+        res.set('Content-Type', 'application/json');
+        res.send(JSON.stringify({
+          status: status,
+          apk: new Buffer(apk, 'binary').toString('base64'),
+          message: msg
+        }));
+      });
+    });
+  }
+
   app.get("/", function(req, res) {
     res.status(200);
     res.type("text/text");
@@ -69,12 +90,12 @@ withConfig(function(config) {
   });
 
   app.listen(config.controller_server_port,
-    config.bind_address,
-    function() {
-      metrics.serverStarted('controller');
-      log.info("controller running on " + config.bind_address + ":" +
-        config.controller_server_port);
-      log.info("talking to " + config.generator_server_hostname + ":" +
-        config.generator_server_port);
-    });
+             config.bind_address,
+             function() {
+                metrics.serverStarted('controller');
+                log.info("controller running on " + config.bind_address + ":" +
+                        config.controller_server_port);
+                log.info("talking to " + config.generator_server_hostname + ":" +
+                        config.generator_server_port);
+              });
 });
