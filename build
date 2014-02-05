@@ -1,0 +1,50 @@
+#!/bin/bash
+
+set -e
+set -x
+
+cd "$(dirname "${0}")"
+ROOT="${PWD}"
+
+RPMNAME=${RPMNAME-"$(basename "${ROOT}")"}
+BUILD_ID=$(date +%Y%m%d%H%M%S)
+
+build_rpm() {
+    local package_file="${1}"
+    local ref=$(cd "${ROOT}"; git rev-parse --short=12 HEAD)
+
+    # update apk-factory-library    
+    pushd lib/ext 
+    rm -rf apk-factory-library
+    git clone https://github.com/mozilla/apk-factory-library.git
+    popd 
+
+    pushd "${ROOT}"/../
+
+    fpm -s dir -t rpm \
+        -n "${RPMNAME}" \
+        --provides moz-apk-factory-app \
+        --rpm-compression gzip \
+        -v "${BUILD_ID}" \
+        -p "${package_file}" \
+        --iteration "${ref}" \
+        --directories / \
+        -x "*.git" -x "*.pyc" \
+        -C . --prefix "/opt" \
+        "${RPMNAME}/"
+    popd
+}
+
+case "${1}" in
+    rpm)
+        if [ $# -lt 2 ]; then
+            echo "Usage: ./build rpm <outfile>"
+            exit 1
+        fi
+        build_rpm "${2}"
+        ;;
+    *)
+        echo "Please specify an action."
+        exit 1
+        ;;
+esac
