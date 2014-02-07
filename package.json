@@ -1,24 +1,26 @@
 {
-  "name": "apk-factory-service",
+  "name": "mozilla-apk-cli",
   "version": "0.0.1",
+  "description": "A Command Line Inteface for generating Android native apps from open webapps",
   "developer": [
     {
       "name": "James Hugman",
       "email": "jhugman@mozilla.com"
+    },
+    {
+      "name": "Austin King",
+      "email": "shout@ozten.com"
     }
   ],
-  "private": true,
+  "bin": {
+    "mozilla-apk-cli": "node bin/cli.js"
+  },
   "scripts": {
     "test": "tap test/*.js",
     "start": "node scripts/development-server.js"
   },
-  "devDependencies": {
-    "grunt-contrib-jshint": "~0.6.0",
-    "grunt-node-tap": "~0.1.44",
-    "grunt": "~0.4.1",
-    "lodash": "~1.3.1"
-  },
-  "dependencies": {
-
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/mozilla/apk-factory-service.git"
   }
 }

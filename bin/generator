@@ -61,7 +61,7 @@ withConfig(function(config) {
 });
 
 function genCb(res) {
-  return function (err, zipFileLocation) {
+  return function (err, apkFileLocation) {
     res.set('Content-Type', 'application/json');
     if (err) {
       res.send({
@@ -71,7 +71,7 @@ function genCb(res) {
     } else {
       res.send({
         status: "okay",
-        zipFileLocation: zipFileLocation
+        apkFileLocation: apkFileLocation
       });
     }        
   };
