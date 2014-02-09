@@ -20,7 +20,7 @@ var owaDownloader = require('../lib/owa_downloader');
 var argv = optimist
   .usage('Usage: $0 {OPTIONS}')
   .wrap(80)
-  .option('overideManifest', {
+  .option('overrideManifest', {
     desc: "The URL or path to the manifest"
   })
   .option('endpoint', {
@@ -41,8 +41,8 @@ var argv = optimist
     argv.manifest = argv._[0];
     argv.output = argv._[1];
     if (-1 === argv.manifest.indexOf('://')) {
-      if (! argv.overideManifest) {
-        console.log('local manifest file should be used with --overideManifest option');
+      if (! argv.overrideManifest) {
+        console.log('local manifest file should be used with --overrideManifest option');
         argv.help();
         process.exit(1);
       }
@@ -50,50 +50,48 @@ var argv = optimist
   })
   .argv;
 
-require('../lib/config')(function(config) {
-  // manifest is used for owaDownloader
-  var manifestUrl = argv.manifest;
-  var loaderDirname;
+// manifest is used for owaDownloader
+var manifestUrl = argv.manifest;
+var loaderDirname;
 
-  if (/^\w+:\/\//.test(manifestUrl)) {
-    loaderDirname = url.resolve(manifestUrl, ".");
-  } else {
-    loaderDirname = path.dirname(path.resolve(process.cwd(), manifestUrl));
-    console.log('loaderDirname', loaderDirname);
+if (/^\w+:\/\//.test(manifestUrl)) {
+  loaderDirname = url.resolve(manifestUrl, ".");
+} else {
+  loaderDirname = path.dirname(path.resolve(process.cwd(), manifestUrl));
+  console.log('loaderDirname', loaderDirname);
+}
+
+var loader = fileLoader.create(loaderDirname);
+
+// TODO AOK refactor and remove app Build Dir
+var appBuildDir = '';
+owaDownloader(argv.manifest, argv.overrideManifest, loader, appBuildDir, owaCb);
+
+function owaCb(err, manifest, appType, zip) {
+  if (err) {
+    return console.error(err);
+    process.exit(1);
   }
-
-  var loader = fileLoader.create(loaderDirname);
-
-  // TODO AOK refactor and remove app Build Dir
-  var appBuildDir = '';
-  owaDownloader(argv.manifest, argv.overideManifest, loader, appBuildDir, owaCb);
-
-  function owaCb(err, manifest, appType, zip) {
-    if (err) {
-      return console.error(err);
-      process.exit(1);
-    }
-    if (!! argv.overideManifest) {
-      manifestUrl = argv.overideManifest;
-    }
-    cliClient(manifestUrl, manifest, zip, argv, function(err, apk) {
-      var output;
-      if (!err) {
-        if (argv.output) {
-          output = path.resolve(process.cwd(), argv.output);
-          fs.writeFile(output, apk, {encoding: 'binary'}, function(err) {
-            if (err) {
-              console.log(err);
-              process.exit(1);
-            }
-          });
-        }
-      } else {
-        console.error(err);
+  if (!! argv.overrideManifest) {
+    manifestUrl = argv.overrideManifest;
+  }
+  cliClient(manifestUrl, manifest, zip, argv, function(err, apk) {
+    var output;
+    if (!err) {
+      if (argv.output) {
+        output = path.resolve(process.cwd(), argv.output);
+        fs.writeFile(output, apk, {encoding: 'binary'}, function(err) {
+          if (err) {
+            console.log(err);
+            process.exit(1);
+          }
+        });
       }
-    });
-  }
-});
+    } else {
+      console.error(err);
+    }
+  });
+}
 
 function cliClient(manifestUrl, manifest, zip, argv, cb) {
   var body = JSON.stringify({
