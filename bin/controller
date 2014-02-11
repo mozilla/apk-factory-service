@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* vim: set filetype=javascript : */
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -89,6 +90,7 @@ withConfig(function(config) {
     res.send("200 Server OK");
   });
 
+  console.log('listening on ', config.controller_server_port);
   app.listen(config.controller_server_port,
              config.bind_address,
              function() {

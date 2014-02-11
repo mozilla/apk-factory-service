@@ -73,6 +73,12 @@ awsSecretAccessKey = 'SETME';
 // Logging defaults to creating a var dir in the top level of this project
 varPath = './var';
 
+
+// URL to the APK Signer server without any paths and without a trailing
+// slash. See https://github.com/mozilla/apk-signer
+signerUrl = 'https://apk-signer.allizom.org';
+
+
 // MySQL
 mysql = {
   host: 'localhost',

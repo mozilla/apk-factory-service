@@ -39,7 +39,7 @@ function wireUp(child, prefix) {
 }
 
 var cChild = spawn('node', [controller]);
-wireUp(cChild, 'CONTROLLR:');
+wireUp(cChild, 'CONTROLLER:');
 
 var gChild = spawn('node', [generator]);
 wireUp(gChild, 'GENERATOR:');
