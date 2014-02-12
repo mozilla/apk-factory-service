@@ -43,6 +43,13 @@ Installation
 Please read [config/default.js](config/default.js) which documents the various
 configuration paramters and allowable values.
 
+CLI
+---
+
+There is a command line interface to create APKs locally.
+
+    node  --endpoint=http://localhost:8080 bin/cli.js http://people.mozilla.org/~fdesre/openwebapps/package.manifest application.apk
+
 Testing
 -------
 
