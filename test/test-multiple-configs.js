@@ -33,7 +33,7 @@ tap.test("Multiple configs works as expected", function(test) {
       debug: false,
       bind_address: undefined,
       controller_server_port:  undefined,
-      generator_server_hostname:  undefined,
+      generator_endpoint:  undefined,
       generator_server_port:  undefined,
       awsAccessKeyId: undefined,
       awsSecretAccessKey: undefined,
