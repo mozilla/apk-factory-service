@@ -56,11 +56,10 @@ controller_server_port = 8080;
 // Env variable: GENERATOR_SERVER_PORT
 generator_server_port = 8081;
 
-// Use this hostname for the generator HTTP server
-// CLI argument: -g or --generator-hostname
-// Env variable: GENERATOR_SERVER_HOSTNAME
-generator_server_hostname = '127.0.0.1';
-
+// Controller uses this endpoint to contact the generator
+// CLI argument: -g or --generator-endpoint
+// Env variable: GENERATOR_ENDPOINT
+generator_endpoint = 'http://127.0.0.1:' + generator_server_port;
 
 // CLI argument: --aws-access-key-id
 // Env variable: AWS_ACCESS_KEY_ID
@@ -69,6 +68,9 @@ awsAccessKeyId = 'SETME';
 // CLI argument: --aws-secret-access-key
 // Env variable: AWS_SECRET_ACCESS_KEY
 awsSecretAccessKey = 'SETME';
+
+awsS3PublicBucket = 'apk-release';
+awsS3PrivateBucket = 'apk-temp';
 
 // Logging defaults to creating a var dir in the top level of this project
 varPath = './var';
