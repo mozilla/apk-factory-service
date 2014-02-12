@@ -17,8 +17,13 @@ process.env['CONFIG_FILES'] = [
   path.join(__dirname, 'data', 'override_config.js')
 ].join(',');
 
+var config = require('../lib/config');
+config.init({
+  'config-files': process.env['CONFIG_FILES']
+});
+
 tap.test("Multiple configs works as expected", function(test) {
-  require('../lib/config')(function(conf) {
+  config.withConfig(function(conf) {
     test.deepEqual(conf, {
       foo: 'FOOBAR5000', // instead of 'bar'
       newprop: 12345, // new from override

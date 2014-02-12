@@ -12,10 +12,13 @@ var tap = require('tap');
 process.env['FILESYSTEM_BUILD'] = '/tmp/test';
 process.env['FILESYSTEM_CACHE'] = '/tmp/test';
 process.env['CONFIG_FILES'] = path.join(__dirname, 'data', 'default_config.js');
+var config = require('../lib/config');
+config.init({
+  'config-files': process.env['CONFIG_FILES']
+});
 
 tap.test("A single config works as expected", function(test) {
-  var config = require('../lib/config');
-  config(function(conf) {
+  config.withConfig(function(conf) {
     test.deepEqual(conf, {
       foo: 'bar',
       buz: 'baz',
