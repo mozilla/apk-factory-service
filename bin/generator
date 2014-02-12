@@ -69,6 +69,12 @@ withConfig(function(config) {
     }
   });
 
+  app.get("/", function(req, res) {
+    res.status(200);
+    res.type("text/text");
+    res.send("200 Server OK");
+  });
+
   console.log('listening on ', config.generator_server_port);
   app.listen(config.generator_server_port,
              config.bind_address,
