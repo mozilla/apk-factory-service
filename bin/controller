@@ -97,7 +97,6 @@ withConfig(function(config) {
                 metrics.serverStarted('controller');
                 log.info("controller running on " + config.bind_address + ":" +
                         config.controller_server_port);
-                log.info("talking to " + config.generator_server_hostname + ":" +
-                        config.generator_server_port);
+                log.info("talking to " + config.generator_endpoint);
               });
 });
