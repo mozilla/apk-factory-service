@@ -9,14 +9,18 @@ process.env.PROCESS_TYPE = 'apk-generator';
 
 var express = require('express');
 var hawk = require('hawk');
+
 var toobusy = require('../lib/busy_middleware.js');
+
+var argv = require('../lib/cli_common_argv');
+var config = require('../lib/config');
+config.init(argv);
 
 var apkSystem = require('../lib/apk_system');
 var ApkGenerator = require('../lib/apk_generator').ApkGenerator;
 var metrics = require('../lib/metrics');
-var withConfig = require('../lib/config');
 
-withConfig(function(config) {
+config.withConfig(function(config) {
   var log = require('../lib/logging')(config);
   var generator = new ApkGenerator(config.buildDir,
                                    config.keysDir,

@@ -10,14 +10,17 @@ process.env.PROCESS_TYPE = 'apk-controller';
 var express = require('express');
 var toobusy = require('../lib/busy_middleware.js');
 
+var argv = require('../lib/cli_common_argv');
+var config = require('../lib/config');
+config.init(argv);
+
 var apkUpdates = require('../lib/apk_updates');
 var cliDevBuild = require('../lib/cli_dev_build');
 var frontController = require('../lib/front_controller');
 var metrics = require('../lib/metrics');
-var withConfig = require('../lib/config');
 
-withConfig(function(config) {
-  console.log(config);
+
+config.withConfig(function(config) {
   var log = require('../lib/logging')(config);
   var app = express();
 

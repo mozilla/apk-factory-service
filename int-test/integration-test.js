@@ -23,8 +23,18 @@ var deltronUrl = 'http://deltron3030.testmanifest.com/manifest.webapp';
 var apkTool = path.join(__dirname, '..', 'lib', 'ext', 'apktool.jar');
 
 var opt =  {encoding: 'utf8'};
+var config = require('../lib/config');
 
-require('../lib/config')(function(config) {
+var configFiles = [
+  path.join(__dirname, '../', 'config/default.js'),
+  path.join(__dirname, '../', 'config/developer.js')
+];
+
+config.init({
+  "config-files": configFiles.join(','),
+});
+
+config.withConfig(function(config) {
   var baseUrl = process.env.APK_ENDPOINT ||
     'http://localhost:' + config.controller_server_port;
 

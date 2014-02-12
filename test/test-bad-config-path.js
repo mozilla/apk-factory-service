@@ -9,13 +9,19 @@ var path = require('path');
 
 var tap = require('tap');
 
+var config = require('../lib/config');
+
 process.env['FILESYSTEM_BUILD'] = '/tmp/test';
 
 tap.test("A single config works as expected", function(test) {
   process.env['CONFIG_FILES'] = 'does-not-exist.js';
-  var config = require('../lib/config');
+  config.init({
+    "config-files": process.env['CONFIG_FILES'],
+    varPath: "/var"
+  });
+  var withConfig = config.withConfig;
   try {
-    config(function(conf) {
+    withConfig(function(conf) {
       // We never get here.
     });
   } catch(e) {
