@@ -19,7 +19,7 @@ These should be set for both the controller and generator deamons
 ### environment
 environment - Either development, review or release
 
-    environment = ="release";
+    environment = "release";
 
 This is the main way to control if you are deploying the reviewer or release instance.
 This should match `signerUrl`.
