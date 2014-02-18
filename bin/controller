@@ -6,6 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 process.env.PROCESS_TYPE = 'apk-controller';
+// TODO Bug#973259
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 
 var express = require('express');
 var toobusy = require('../lib/busy_middleware.js');
@@ -45,6 +47,7 @@ config.withConfig(function(config) {
 
     frontController(manifestUrl, appType, config, function(err, apk) {
       if (err) {
+        console.log(err);
         res.type("text/plain");
         res.send(400, err.toString());
         metrics.generationApkFailed();
@@ -70,17 +73,23 @@ config.withConfig(function(config) {
 
   if (['development', 'review'].indexOf(config.environment) !== -1) {
     app.post('/cli_build', function(req, res) {
-      cliDevBuild(req.body, config, function(err, apk) {
+      cliDevBuild(req.body, config, function(err, cliRes, apk) {
         var status = 'okay';
         var msg = '';
+        var bApk = null;
         if (err) {
           status = 'error';
           msg = err;
+        } else if (200 !== cliRes.statusCode) {
+          status = 'error';
+          msg = 'Failed to get S3 url';
+        } else {
+          bApk = new Buffer(apk, 'binary').toString('base64');
         }
         res.set('Content-Type', 'application/json');
         res.send(JSON.stringify({
           status: status,
-          apk: new Buffer(apk, 'binary').toString('base64'),
+          apk: bApk,
           message: msg
         }));
       });
@@ -99,7 +108,7 @@ config.withConfig(function(config) {
              function() {
                 metrics.serverStarted('controller');
                 log.info("controller running on " + config.bind_address + ":" +
-                        config.controller_server_port);
+                         config.controller_server_port);
                 log.info("talking to " + config.generator_endpoint);
               });
 });

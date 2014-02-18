@@ -6,6 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 process.env.PROCESS_TYPE = 'apk-generator';
+// TODO Bug#973259
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 
 var express = require('express');
 var hawk = require('hawk');
@@ -85,7 +87,7 @@ config.withConfig(function(config) {
              function() {
                 metrics.serverStarted('generator');
                 log.info("generator running on " + config.bind_address + ":" +
-                        config.generator_server_port);
+                         config.generator_server_port);
               });
 });
 
