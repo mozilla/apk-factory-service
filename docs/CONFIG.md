@@ -109,7 +109,7 @@ slash. See https://github.com/mozilla/apk-signer
 
     signerUrl = 'https://apk-signer.allizom.org';
 
-### hawkPublicServerPort = 8080;
+### hawkPublicServerPort
 
 Hawk's server authentication between the controller and generater
 needs to know what port number is publically exposed, even
