@@ -109,6 +109,16 @@ slash. See https://github.com/mozilla/apk-signer
 
     signerUrl = 'https://apk-signer.allizom.org';
 
+### hawkPublicServerPort = 8080;
+
+Hawk's server authentication between the controller and generater
+needs to know what port number is publically exposed, even
+if the deamon binds to a different one internally.
+
+Example: 443 in production.
+
+    hawkPublicServerPort = 8081;
+
 ## Development Only Config
 
 **IGNORE FOR STAGE / PRODUCTION**

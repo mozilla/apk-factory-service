@@ -37,10 +37,11 @@ config.withConfig(function(config) {
   app.use(express.bodyParser());
 
   function withHawk(req, res, next, onAuthZ) {
+    var port = config.hawkPublicServerPort;
     hawk.server.authenticate(req, function(id, cb) {
       console.log('incoming Hawk request for', id);
       cb(null, config.hawk);
-    }, {}, function(err, credentials, artifacts) {
+    }, {port: port}, function(err, credentials, artifacts) {
       credentials = credentials || {};
       if(err) {
         console.log('Hawk error:', err);

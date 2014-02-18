@@ -95,3 +95,6 @@ hawk = {
   algorithm: 'sha256',
   id: 'apk-factory'
 }
+
+// Public port # for generator urls
+hawkPublicServerPort = 8081;
