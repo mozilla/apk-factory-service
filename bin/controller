@@ -103,19 +103,19 @@ config.withConfig(function(config) {
     res.send("200 Server OK");
   });
 
-app.get('/system/generator', function(req, res) {
-  request({
-    url: config.generator_endpoint + '/system/authz',
-    method: 'GET',
-    hawk: {credentials: config.hawk}
-  }, function(err, reqRes, body) {
-    if (err || 200 !== reqRes.statusCode) {
-      res.send(err || 'Generator response status code was ' + reqRes.statusCode, 409);
-    } else {
-      res.send(JSON.parse(body), 203);
-    }
+  app.get('/system/generator', function(req, res) {
+    request({
+      url: config.generator_endpoint + '/system/authz',
+      method: 'GET',
+      hawk: {credentials: config.hawk}
+    }, function(err, reqRes, body) {
+      if (err || 200 !== reqRes.statusCode) {
+        res.send(err || 'Generator response status code was ' + reqRes.statusCode, 409);
+      } else {
+        res.send(JSON.parse(body), 203);
+      }
+    });
   });
-});
 
   console.log('listening on ', config.controller_server_port);
   app.listen(config.controller_server_port,
