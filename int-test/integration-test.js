@@ -34,6 +34,8 @@ config.init({
   "config-files": configFiles.join(','),
 });
 
+var alwaysUpdating = require('./always_updating');
+
 config.withConfig(function(config) {
   var baseUrl = process.env.APK_ENDPOINT ||
     'http://localhost:' + config.controller_server_port;
@@ -96,6 +98,7 @@ config.withConfig(function(config) {
 
       },
       function finish(err) {
+        fsExtra.rmrfSync('decoded');
         test.notOk(err, err);
         cb(err);
       }
@@ -103,7 +106,6 @@ config.withConfig(function(config) {
   }
 
   var desreManifest, deltronManifest;
-
   tap.test('Manifests are available', function(test) {
     Step(
       function getDesreUrl() {
@@ -133,7 +135,7 @@ config.withConfig(function(config) {
         try {
           conn.connect();
           conn.query('DELETE FROM apk_metadata', [],
-                     function(err/*, rows, fields*/) {
+                     function(err) {
                        conn.end();
                        that(err);
                      });
@@ -225,6 +227,119 @@ config.withConfig(function(config) {
         testFile(test, 't', stdout, stderr, this);
       },
       function finish() {
+        test.end();
+      }
+    );
+  });
+
+  tap.test('DB can handle updates', function(test) {
+    var server, serverPort, alwaysUpdatingManifest, alwaysUpdatingUrl;
+    var conn, id, version, libraryVersion;
+    Step(
+      function startServer() {
+        alwaysUpdating(this);
+      },
+      function serverCallback(err, aServer) {
+        test.notOk(err);
+        server = aServer;
+        serverPort = server.address().port;
+        alwaysUpdatingManifest = 'http://localhost:' + serverPort + '/manifest.webapp';
+        alwaysUpdatingUrl = 'http://localhost:8080/application.apk?manifestUrl=' + 
+          alwaysUpdatingManifest;
+        request(alwaysUpdatingUrl, this);
+      },
+      function afterGet1(err, res, body) {
+        test.notOk(err);
+        test.equal(200, res.statusCode);
+        var that = this;
+        conn = mysql.createConnection(config.mysql);
+        try {
+          conn.connect();
+          conn.query('SELECT id, version, manifest_hash, package_hash, library_version' +
+                     ' FROM apk_metadata WHERE manifest_url = ?', [alwaysUpdatingManifest],
+                     function(err, rows, fields) {
+                       conn.end();
+		       test.equal(1, rows.length, 'We have one metadata record');
+                       that(err, rows[0]);
+                     });
+        } catch(e) {
+          console.error(e);
+          that(e);
+        }
+      },
+      function afterDb1(err, row) {
+        test.notOk(err);
+        id = row.id;
+        test.equal(null, row.package_hash, 'A hosted app should have a null package hash');
+        version = row.version;
+        libraryVersion = row.library_version;
+        request(alwaysUpdatingUrl, this);
+      },
+      function afterCurl2(err, res, body) {
+        test.notOk(err);
+        test.equal(200, res.statusCode);
+        var that = this;
+        conn = mysql.createConnection(config.mysql);
+        try {
+          conn.connect();
+          conn.query('SELECT id, version, manifest_hash, package_hash, library_version' +
+                     ' FROM apk_metadata WHERE manifest_url = ?', [alwaysUpdatingManifest],
+                     function(err, rows, fields) {
+                       conn.end();
+                       that(err, rows[0]);
+                     });
+        } catch(e) {
+          console.error(e);
+          that(e);
+        }
+      },
+      function afterDb2(err, row) {
+        test.notOk(err);
+        test.equal(id, row.id, 'ID is stable across updates');
+        test.equal(null, row.package_hash, 'A hosted app should have a null package hash');
+        test.ok(version < row.version, 'Our version number increments');
+        test.equal(libraryVersion, row.library_version, 'Our APK Library version is stable');
+
+        var that = this;
+        conn = mysql.createConnection(config.mysql);
+        try {
+          conn.connect();
+          conn.query('SELECT version, manifest_url' +
+                     ' FROM apk_metadata', [],
+                     function(err, rows, fields) {
+                       conn.end();
+                       that(err, rows);
+                     });
+        } catch(e) {
+          console.error(e);
+          that(e);
+        }
+      },
+      function afterDbVersionsCheck(err, rows) {
+        test.notOk(err);
+        test.ok(rows.length >= 3, "We've got atleast 3 manifest urls in there now...");
+        var data = {
+          installed: {
+
+          }
+        };
+        rows.forEach(function(row) {
+          data.installed[row.manifest_url] = row.version;
+        });
+        request({
+          method: 'POST',
+          url: 'http://localhost:8080/app_updates',
+          body: JSON.stringify(data),
+          headers: {'Content-Type': 'application/json'}
+        }, this);
+      },
+      function afterAppUpdateRequest(err, res, body) {
+        test.notOk(err);
+        var outdated = JSON.parse(body).outdated;
+        test.equal(1, outdated.length);
+        test.equal(outdated[0], alwaysUpdatingManifest,
+                   'Always updating manifest should appear outdated, but none others');
+        server.close();
         test.end();
       }
     );
