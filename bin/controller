@@ -21,6 +21,7 @@ var apkUpdates = require('../lib/apk_updates');
 var cliDevBuild = require('../lib/cli_dev_build');
 var frontController = require('../lib/front_controller');
 var metrics = require('../lib/metrics');
+var s3Check = require('../lib/s3_check');
 
 
 config.withConfig(function(config) {
@@ -113,6 +114,18 @@ config.withConfig(function(config) {
         res.send(err || 'Generator response status code was ' + reqRes.statusCode, 409);
       } else {
         res.send(JSON.parse(body), 203);
+      }
+    });
+  });
+
+  app.get('/system/s3', function(req, res) {
+    s3Check(function(err) {
+      if (err) {
+        res.send(err, 409);
+      } else {
+        res.send({
+          "msg": "S3 Access Successful"
+        }, 203);
       }
     });
   });
