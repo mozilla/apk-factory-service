@@ -47,18 +47,25 @@ config.withConfig(function(config) {
 
     metrics.generateApkRequest(manifestUrl);
 
-    frontController(manifestUrl, appType, config, function(err, apk) {
-      if (err) {
+    frontController(manifestUrl, appType, config, function(s3res) {
+      if (s3res.statusCode !== 200) {
+        var err = 'controller unable to load ' + s3res.req.path +
+          ' from S3. Status Code: ' + s3res.statusCode;
         console.log(err);
         res.type("text/plain");
-        res.send(400, err.toString());
+        res.send(400, err);
         metrics.generationApkFailed();
         return;
       }
       res.type("application/vnd.android.package-archive");
       res.status(200);
-      res.send(apk.Body);
-      metrics.generationApkFinished(new Date() - start);
+      s3res.on('data', function(chunk) {
+        res.write(chunk);
+      });
+      s3res.on('end', function() {
+        res.send();
+        metrics.generationApkFinished(new Date() - start);
+      });
     });
   });
 
@@ -121,6 +128,7 @@ config.withConfig(function(config) {
   app.get('/system/s3', function(req, res) {
     s3Check(function(err) {
       if (err) {
+        console.log('err', err);
         res.send(err, 409);
       } else {
         res.send({
