@@ -61,6 +61,13 @@ Controls where log files are written
 
     varPath = './var';
 
+### logLevel
+
+Controls how verbose logging is. Must be one of `debug`, `info`, `warn`, or
+`error`. Logs that level and anything more important.
+
+    logLevel = 'info';
+
 ### hawk
 Hawk authentication nested config of `key`, `algorithm`, and `id`.
 **values must match** between controller, generator, and **APK Signer**

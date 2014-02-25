@@ -40,7 +40,7 @@ config.withConfig(function(config) {
     var appType = req.query.appType || "hosted";
 
     if (!manifestUrl) {
-      metrics.badManifestUrl();
+      metrics.badManifestUrl(manifestUrl);
       res.send("A manifestUrl param is needed", 400);
       return;
     }
@@ -49,44 +49,43 @@ config.withConfig(function(config) {
 
     frontController(manifestUrl, appType, config, function(err, apk) {
       if (err) {
-        console.log(err);
+        log.error(err);
         res.type("text/plain");
         res.send(400, err.toString());
-        metrics.generationApkFailed();
+        metrics.generationApkFailed(manifestUrl);
         return;
       }
       res.type("application/vnd.android.package-archive");
       res.status(200);
       res.send(apk.Body);
-      metrics.generationApkFinished(new Date() - start);
+      metrics.generationApkFinished(manifestUrl, new Date() - start);
     });
   });
 
   app.post('/app_updates', function(req, res) {
     var start = new Date();
+    log.debug('/app_updates requested');
     apkUpdates(req.body, config, function(err, outdated) {
       res.set('Content-Type', 'application/json');
       res.send(JSON.stringify({
         outdated: outdated
       }));
-      metrics.generationApkFinished(new Date() - start);
+      metrics.appUpdatesFinished(new Date() - start);
     });
   });
 
   if (['development', 'review'].indexOf(config.environment) !== -1) {
     app.post('/cli_build', function(req, res) {
-      cliDevBuild(req.body, config, function(err, cliRes, apk) {
+      cliDevBuild(req.body, config, function(err, apk) {
         var status = 'okay';
         var msg = '';
         var bApk = null;
         if (err) {
           status = 'error';
           msg = err;
-        } else if (200 !== cliRes.statusCode) {
-          status = 'error';
-          msg = 'Failed to get S3 url';
+          log.error(err);
         } else {
-          bApk = new Buffer(apk, 'binary').toString('base64');
+          bApk = new Buffer(apk.Body, 'binary').toString('base64');
         }
         res.set('Content-Type', 'application/json');
         res.send(JSON.stringify({
@@ -130,7 +129,7 @@ config.withConfig(function(config) {
     });
   });
 
-  console.log('listening on ', config.controller_server_port);
+  process.stdout.write('listening on ', config.controller_server_port);
   app.listen(config.controller_server_port,
              config.bind_address,
              function() {
