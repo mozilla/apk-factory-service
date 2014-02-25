@@ -78,6 +78,11 @@ varPath = './var';
 // Log Level - debug, info, warn, or error
 logLevel = 'info';
 
+statsd = {
+  host: 'localhost',
+  port: 8125
+}
+
 
 // URL to the APK Signer server without any paths and without a trailing
 // slash. See https://github.com/mozilla/apk-signer

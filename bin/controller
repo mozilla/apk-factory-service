@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 /* vim: set filetype=javascript : */
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
@@ -64,8 +65,12 @@ config.withConfig(function(config) {
 
   app.post('/app_updates', function(req, res) {
     var start = new Date();
-    log.debug('/app_updates requested');
+    metrics.appUpdatesRequest();
     apkUpdates(req.body, config, function(err, outdated) {
+      // Partial failures are okay (?)
+      if (err) {
+        metrics.appUpdatesFailed();
+      }
       res.set('Content-Type', 'application/json');
       res.send(JSON.stringify({
         outdated: outdated
@@ -107,7 +112,9 @@ config.withConfig(function(config) {
     request({
       url: config.generator_endpoint + '/system/authz',
       method: 'GET',
-      hawk: {credentials: config.hawk}
+      hawk: {
+        credentials: config.hawk
+      }
     }, function(err, reqRes, body) {
       if (err || 200 !== reqRes.statusCode) {
         res.send(err || 'Generator response status code was ' + reqRes.statusCode, 409);
@@ -131,11 +138,11 @@ config.withConfig(function(config) {
 
   process.stdout.write('listening on ', config.controller_server_port);
   app.listen(config.controller_server_port,
-             config.bind_address,
-             function() {
-                metrics.serverStarted('controller');
-                log.info("controller running on " + config.bind_address + ":" +
-                         config.controller_server_port);
-                log.info("talking to " + config.generator_endpoint);
-              });
+    config.bind_address,
+    function() {
+      metrics.serverStarted('controller');
+      log.info("controller running on " + config.bind_address + ":" +
+        config.controller_server_port);
+      log.info("talking to " + config.generator_endpoint);
+    });
 });
