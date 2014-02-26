@@ -22,7 +22,9 @@ var deltronUrl = 'http://deltron3030.testmanifest.com/manifest.webapp';
 
 var apkTool = path.join(__dirname, '..', 'lib', 'ext', 'apktool.jar');
 
-var opt =  {encoding: 'utf8'};
+var opt = {
+  encoding: 'utf8'
+};
 var config = require('../lib/config');
 
 var configFiles = [
@@ -41,7 +43,7 @@ config.withConfig(function(config) {
     'http://localhost:' + config.controller_server_port;
 
   function makeUrl(manifestUrl) {
-    return baseUrl + '/application.apk?manifestUrl=' + 
+    return baseUrl + '/application.apk?manifestUrl=' +
       encodeURIComponent(manifestUrl);
   }
 
@@ -70,7 +72,7 @@ config.withConfig(function(config) {
       function checkApplicationZip(err, xml) {
         test.notOk(err, 'We read AndroidManifest.xml');
         // xml.indexOf('android:versionName="' + manifest.version) !== -1
-        if (!! manifest.package_path) {
+        if ( !! manifest.package_path) {
           var that = this;
           exec('file decoded/res/raw/application.zip', function(err, stdout, stderr) {
             test.notOk(err);
@@ -89,7 +91,7 @@ config.withConfig(function(config) {
         var reason = 'res/raw/manifest.json matches http version';
         var m = JSON.parse(raw);
 
-        if (!! manifest.package_path) {
+        if ( !! manifest.package_path) {
           reason = 'res/raw/mini.json matches http version';
           m = JSON.parse(fs.readFileSync('decoded/res/raw/mini.json', opt));
         }
@@ -135,11 +137,11 @@ config.withConfig(function(config) {
         try {
           conn.connect();
           conn.query('DELETE FROM apk_metadata', [],
-                     function(err) {
-                       conn.end();
-                       that(err);
-                     });
-        } catch(e) {
+            function(err) {
+              conn.end();
+              that(err);
+            });
+        } catch (e) {
           console.error(e);
           that(e);
         }
@@ -165,7 +167,8 @@ config.withConfig(function(config) {
         test.notOk(err, 'apktool 1 check');
         test.end();
       }
-    )});
+    )
+  });
 
   tap.test('We can build a hosted app', function(test) {
     Step(
@@ -205,12 +208,13 @@ config.withConfig(function(config) {
       function afterCurl3File(err, stdout, stderr) {
         test.notOk(err);
         testFile(test, 't', stdout, stderr, this);
-      },      
-      function (err) {
+      },
+      function(err) {
         test.notOk(err);
         test.end();
       }
-    )});
+    )
+  });
 
   tap.test('We can get a cached hosted app', function(test) {
     Step(
@@ -244,7 +248,7 @@ config.withConfig(function(config) {
         server = aServer;
         serverPort = server.address().port;
         alwaysUpdatingManifest = 'http://localhost:' + serverPort + '/manifest.webapp';
-        alwaysUpdatingUrl = 'http://localhost:8080/application.apk?manifestUrl=' + 
+        alwaysUpdatingUrl = 'http://localhost:8080/application.apk?manifestUrl=' +
           alwaysUpdatingManifest;
         request(alwaysUpdatingUrl, this);
       },
@@ -255,14 +259,14 @@ config.withConfig(function(config) {
         conn = mysql.createConnection(config.mysql);
         try {
           conn.connect();
-          conn.query('SELECT id, version, manifest_hash, package_hash, library_version' +
-                     ' FROM apk_metadata WHERE manifest_url = ?', [alwaysUpdatingManifest],
-                     function(err, rows, fields) {
-                       conn.end();
-		       test.equal(1, rows.length, 'We have one metadata record');
-                       that(err, rows[0]);
-                     });
-        } catch(e) {
+          conn.query('SELECT id, version, manifest_hash, library_version' +
+            ' FROM apk_metadata WHERE manifest_url = ?', [alwaysUpdatingManifest],
+            function(err, rows, fields) {
+              conn.end();
+              test.equal(1, rows.length, 'We have one metadata record');
+              that(err, rows[0]);
+            });
+        } catch (e) {
           console.error(e);
           that(e);
         }
@@ -270,25 +274,24 @@ config.withConfig(function(config) {
       function afterDb1(err, row) {
         test.notOk(err);
         id = row.id;
-        test.equal(null, row.package_hash, 'A hosted app should have a null package hash');
         version = row.version;
         libraryVersion = row.library_version;
         request(alwaysUpdatingUrl, this);
       },
       function afterCurl2(err, res, body) {
-        test.notOk(err);
-        test.equal(200, res.statusCode);
+        test.notOk(err, 'no error from request');
+        test.equal(200, res.statusCode, 'request is 200');
         var that = this;
         conn = mysql.createConnection(config.mysql);
         try {
           conn.connect();
-          conn.query('SELECT id, version, manifest_hash, package_hash, library_version' +
-                     ' FROM apk_metadata WHERE manifest_url = ?', [alwaysUpdatingManifest],
-                     function(err, rows, fields) {
-                       conn.end();
-                       that(err, rows[0]);
-                     });
-        } catch(e) {
+          conn.query('SELECT id, version, manifest_hash, library_version' +
+            ' FROM apk_metadata WHERE manifest_url = ?', [alwaysUpdatingManifest],
+            function(err, rows, fields) {
+              conn.end();
+              that(err, rows[0]);
+            });
+        } catch (e) {
           console.error(e);
           that(e);
         }
@@ -296,7 +299,6 @@ config.withConfig(function(config) {
       function afterDb2(err, row) {
         test.notOk(err);
         test.equal(id, row.id, 'ID is stable across updates');
-        test.equal(null, row.package_hash, 'A hosted app should have a null package hash');
         test.ok(version < row.version, 'Our version number increments');
         test.equal(libraryVersion, row.library_version, 'Our APK Library version is stable');
 
@@ -305,12 +307,12 @@ config.withConfig(function(config) {
         try {
           conn.connect();
           conn.query('SELECT version, manifest_url' +
-                     ' FROM apk_metadata', [],
-                     function(err, rows, fields) {
-                       conn.end();
-                       that(err, rows);
-                     });
-        } catch(e) {
+            ' FROM apk_metadata', [],
+            function(err, rows, fields) {
+              conn.end();
+              that(err, rows);
+            });
+        } catch (e) {
           console.error(e);
           that(e);
         }
@@ -330,7 +332,9 @@ config.withConfig(function(config) {
           method: 'POST',
           url: 'http://localhost:8080/app_updates',
           body: JSON.stringify(data),
-          headers: {'Content-Type': 'application/json'}
+          headers: {
+            'Content-Type': 'application/json'
+          }
         }, this);
       },
       function afterAppUpdateRequest(err, res, body) {
@@ -338,7 +342,7 @@ config.withConfig(function(config) {
         var outdated = JSON.parse(body).outdated;
         test.equal(1, outdated.length);
         test.equal(outdated[0], alwaysUpdatingManifest,
-                   'Always updating manifest should appear outdated, but none others');
+          'Always updating manifest should appear outdated, but none others');
         server.close();
         test.end();
       }
