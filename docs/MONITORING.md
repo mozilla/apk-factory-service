@@ -10,4 +10,3 @@ The following endpoints are available for monitoring
 
 * / - 200
 * /system/signer - Can we contact the APK Signer deamon via /system/auth (203 or 409)
-* /system/authz - Is Hawk configured between the Generator and APK Signer (200 or 401)
