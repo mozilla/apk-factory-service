@@ -91,6 +91,12 @@ for a given environment like production.
       port: 8125
     }
 
+### sentryDSN
+
+Sentry logging endpoint. App update states are written to Sentry.
+
+sentryDSN = 'udp://shomesha:othersha@somewhere.com:someport/somenumber'
+
 ## Controller Only Config
 
 ### controller_server_port

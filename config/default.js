@@ -83,6 +83,9 @@ statsd = {
   port: 8125
 }
 
+// Sentry Config
+sentryDSN = 'udp://shomesha:othersha@somewhere.com:someport/somenumber'
+
 
 // URL to the APK Signer server without any paths and without a trailing
 // slash. See https://github.com/mozilla/apk-signer

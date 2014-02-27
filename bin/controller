@@ -11,6 +11,7 @@ process.env.PROCESS_TYPE = 'apk-controller';
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 
 var express = require('express');
+var raven = require('raven');
 var request = require('request');
 var toobusy = require('../lib/busy_middleware.js');
 
@@ -33,6 +34,8 @@ config.withConfig(function(config) {
   app.use(toobusy);
 
   app.use(express.bodyParser());
+
+  app.use(raven.middleware.express(config.sentryDSN));
 
   app.get('/application.apk', function(req, res) {
     var start = new Date();
