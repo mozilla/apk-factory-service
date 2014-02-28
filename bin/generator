@@ -75,16 +75,15 @@ config.withConfig(function(config) {
       apkSystem.signer(req, res, log);
     } else if ('/system/authz' === req.path) {
       withHawk(req, res, next, apkSystem.authz);
+
+    } else if ('/' === req.path) {
+      res.status(200);
+      res.type("text/text");
+      res.send("200 Server OK");
     } else {
       log.info('Huh. No route for ' + req.path);
       next();
     }
-  });
-
-  app.get("/", function(req, res) {
-    res.status(200);
-    res.type("text/text");
-    res.send("200 Server OK");
   });
 
   process.stdout.write('listening on ', config.generator_server_port);
