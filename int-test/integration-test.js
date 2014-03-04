@@ -7,6 +7,8 @@
  $ APK_ENDPOINT='http://dapk.net' tap int-test/integration-test.js
 
 */
+process.env.APK_HASH_TTL = 1000;
+
 var exec = require('child_process').exec;
 var fs = require('fs');
 var path = require('path');
@@ -244,7 +246,7 @@ config.withConfig(function(config) {
         alwaysUpdating(this);
       },
       function serverCallback(err, aServer) {
-        test.notOk(err);
+        test.notOk(err, 'always updating server started');
         server = aServer;
         serverPort = server.address().port;
         alwaysUpdatingManifest = 'http://localhost:' + serverPort + '/manifest.webapp';
@@ -253,13 +255,13 @@ config.withConfig(function(config) {
         request(alwaysUpdatingUrl, this);
       },
       function afterGet1(err, res, body) {
-        test.notOk(err);
-        test.equal(200, res.statusCode);
+        test.notOk(err, 'get request has no eror');
+        test.equal(200, res.statusCode, 'get request was 200');
         var that = this;
         conn = mysql.createConnection(config.mysql);
         try {
           conn.connect();
-          conn.query('SELECT id, version, manifest_hash, package_hash, library_version' +
+          conn.query('SELECT id, version, manifest_hash, library_version' +
             ' FROM apk_metadata WHERE manifest_url = ?', [alwaysUpdatingManifest],
             function(err, rows, fields) {
               conn.end();
@@ -272,21 +274,26 @@ config.withConfig(function(config) {
         }
       },
       function afterDb1(err, row) {
-        test.notOk(err);
+        test.notOk(err, 'No errors from reading the db');
         id = row.id;
-        test.equal(null, row.package_hash, 'A hosted app should have a null package hash');
         version = row.version;
         libraryVersion = row.library_version;
-        request(alwaysUpdatingUrl, this);
+        var that = this;
+        console.log('Go to sleep');
+        // We have a 1 second cache
+        setTimeout(function() {
+          console.log('and sending request...');
+          request(alwaysUpdatingUrl, that);
+        }, 2000);
       },
       function afterCurl2(err, res, body) {
-        test.notOk(err);
-        test.equal(200, res.statusCode);
+        test.notOk(err, 'no error from request');
+        test.equal(200, res.statusCode, 'request is 200');
         var that = this;
         conn = mysql.createConnection(config.mysql);
         try {
           conn.connect();
-          conn.query('SELECT id, version, manifest_hash, package_hash, library_version' +
+          conn.query('SELECT id, version, manifest_hash, library_version' +
             ' FROM apk_metadata WHERE manifest_url = ?', [alwaysUpdatingManifest],
             function(err, rows, fields) {
               conn.end();
@@ -300,8 +307,7 @@ config.withConfig(function(config) {
       function afterDb2(err, row) {
         test.notOk(err);
         test.equal(id, row.id, 'ID is stable across updates');
-        test.equal(null, row.package_hash, 'A hosted app should have a null package hash');
-        test.ok(version < row.version, 'Our version number increments');
+        test.ok(version < row.version, 'Our version number increments ' + version + ' ' + row.version);
         test.equal(libraryVersion, row.library_version, 'Our APK Library version is stable');
 
         var that = this;
@@ -320,6 +326,7 @@ config.withConfig(function(config) {
         }
       },
       function afterDbVersionsCheck(err, rows) {
+        var that = this;
         test.notOk(err);
         test.ok(rows.length >= 3, "We've got atleast 3 manifest urls in there now...");
         var data = {
@@ -330,19 +337,21 @@ config.withConfig(function(config) {
         rows.forEach(function(row) {
           data.installed[row.manifest_url] = row.version;
         });
-        request({
-          method: 'POST',
-          url: 'http://localhost:8080/app_updates',
-          body: JSON.stringify(data),
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }, this);
+        setTimeout(function() {
+          request({
+            method: 'POST',
+            url: 'http://localhost:8080/app_updates',
+            body: JSON.stringify(data),
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }, that);
+        }, 2000);
       },
       function afterAppUpdateRequest(err, res, body) {
-        test.notOk(err);
+        test.notOk(err, 'No error for request to app_updates');
         var outdated = JSON.parse(body).outdated;
-        test.equal(1, outdated.length);
+        test.equal(1, outdated.length, 'only 1 app is out of date got ' + outdated.length);
         test.equal(outdated[0], alwaysUpdatingManifest,
           'Always updating manifest should appear outdated, but none others');
         server.close();

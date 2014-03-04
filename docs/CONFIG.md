@@ -109,6 +109,12 @@ Controller uses this endpoint to contact the generator.
 
     generator_endpoint = 'https://apk-generator-release.mozilla.org'
 
+### manifestCacheTTL
+
+Manfiests are cached for this number of seconds
+
+    manifestCacheTTL=60
+
 ### mysql
 
 Nested config of `host`, `user`, `password`, and `database`.
