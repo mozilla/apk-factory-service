@@ -14,10 +14,6 @@ var url = require('url');
 var optimist = require('optimist');
 var request = require('request');
 
-var fileLoader = require('../lib/file_loader');
-var frontController = require('../lib/front_controller');
-var owaDownloader = require('../lib/owa_downloader');
-
 var argv = optimist
   .usage('Usage: $0 {OPTIONS}')
   .wrap(80)
@@ -27,6 +23,9 @@ var argv = optimist
   .option('endpoint', {
     desc: "The URL for the APK Factory Service",
   default: "https://apk-review.mozilla.org"
+  })
+  .option('config-files', {
+  default: 'config/default.js,config/cli.js'
   })
   .option('help', {
     alias: "?",
@@ -51,6 +50,14 @@ var argv = optimist
   })
   .argv;
 
+var config = require('../lib/config');
+config.init(argv);
+
+var fileLoader = require('../lib/file_loader');
+var frontController = require('../lib/front_controller');
+var owaDownloader = require('../lib/owa_downloader');
+
+
 // manifest is used for owaDownloader
 var manifestUrl = argv.manifest;
 var loaderDirname;
@@ -59,7 +66,6 @@ if (/^\w+:\/\//.test(manifestUrl)) {
   loaderDirname = url.resolve(manifestUrl, ".");
 } else {
   loaderDirname = path.dirname(path.resolve(process.cwd(), manifestUrl));
-  console.log('loaderDirname', loaderDirname);
 }
 
 var loader = fileLoader.create(loaderDirname);
@@ -70,7 +76,7 @@ owaDownloader(argv.manifest, argv.overrideManifest, loader, appBuildDir, owaCb);
 
 function owaCb(err, manifest, appType, zip) {
   if (err) {
-    return console.error(err);
+    console.error(err);
     process.exit(1);
   }
   if (!! argv.overrideManifest) {
@@ -86,11 +92,15 @@ function owaCb(err, manifest, appType, zip) {
             console.log(err);
             process.exit(1);
           }
+	  console.log('APK file is available at ' + argv.output);
+          process.exit(0);
         });
       }
     } else {
       console.error(err);
+      process.exit(1);
     }
+
   });
 }
 

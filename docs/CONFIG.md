@@ -61,6 +61,13 @@ Controls where log files are written
 
     varPath = './var';
 
+### logLevel
+
+Controls how verbose logging is. Must be one of `debug`, `info`, `warn`, or
+`error`. Logs that level and anything more important.
+
+    logLevel = 'info';
+
 ### hawk
 Hawk authentication nested config of `key`, `algorithm`, and `id`.
 **values must match** between controller, generator, and **APK Signer**
@@ -69,6 +76,19 @@ Hawk authentication nested config of `key`, `algorithm`, and `id`.
       key: 'foobar',
       algorithm: 'sha256',
       id: 'apk-factory'
+    }
+
+### statsd
+
+Important metrics or events are sent to statsd.
+Stats will be written to apk-controller-release
+or apk-generator-review, so it is safe to use
+the same statsd instance for reviewer and release
+for a given environment like production.
+
+    statsd = {
+      host: 'localhost',
+      port: 8125
     }
 
 ## Controller Only Config

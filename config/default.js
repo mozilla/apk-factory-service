@@ -75,6 +75,14 @@ awsS3PrivateBucket = 'apk-temp';
 // Logging defaults to creating a var dir in the top level of this project
 varPath = './var';
 
+// Log Level - debug, info, warn, or error
+logLevel = 'info';
+
+statsd = {
+  host: 'localhost',
+  port: 8125
+}
+
 
 // URL to the APK Signer server without any paths and without a trailing
 // slash. See https://github.com/mozilla/apk-signer

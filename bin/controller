@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 /* vim: set filetype=javascript : */
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
@@ -40,7 +41,7 @@ config.withConfig(function(config) {
     var appType = req.query.appType || "hosted";
 
     if (!manifestUrl) {
-      metrics.badManifestUrl();
+      metrics.badManifestUrl(manifestUrl);
       res.send("A manifestUrl param is needed", 400);
       return;
     }
@@ -71,29 +72,32 @@ config.withConfig(function(config) {
 
   app.post('/app_updates', function(req, res) {
     var start = new Date();
+    metrics.appUpdatesRequest();
     apkUpdates(req.body, config, function(err, outdated) {
+      // Partial failures are okay (?)
+      if (err) {
+        metrics.appUpdatesFailed();
+      }
       res.set('Content-Type', 'application/json');
       res.send(JSON.stringify({
         outdated: outdated
       }));
-      metrics.generationApkFinished(new Date() - start);
+      metrics.appUpdatesFinished(new Date() - start);
     });
   });
 
   if (['development', 'review'].indexOf(config.environment) !== -1) {
     app.post('/cli_build', function(req, res) {
-      cliDevBuild(req.body, config, function(err, cliRes, apk) {
+      cliDevBuild(req.body, config, function(err, apk) {
         var status = 'okay';
         var msg = '';
         var bApk = null;
         if (err) {
           status = 'error';
           msg = err;
-        } else if (200 !== cliRes.statusCode) {
-          status = 'error';
-          msg = 'Failed to get S3 url';
+          log.error(err);
         } else {
-          bApk = new Buffer(apk, 'binary').toString('base64');
+          bApk = new Buffer(apk.Body, 'binary').toString('base64');
         }
         res.set('Content-Type', 'application/json');
         res.send(JSON.stringify({
@@ -115,7 +119,9 @@ config.withConfig(function(config) {
     request({
       url: config.generator_endpoint + '/system/authz',
       method: 'GET',
-      hawk: {credentials: config.hawk}
+      hawk: {
+        credentials: config.hawk
+      }
     }, function(err, reqRes, body) {
       if (err || 200 !== reqRes.statusCode) {
         res.send(err || 'Generator response status code was ' + reqRes.statusCode, 409);
@@ -138,13 +144,13 @@ config.withConfig(function(config) {
     });
   });
 
-  console.log('listening on ', config.controller_server_port);
+  process.stdout.write('listening on ', config.controller_server_port);
   app.listen(config.controller_server_port,
-             config.bind_address,
-             function() {
-                metrics.serverStarted('controller');
-                log.info("controller running on " + config.bind_address + ":" +
-                         config.controller_server_port);
-                log.info("talking to " + config.generator_endpoint);
-              });
+    config.bind_address,
+    function() {
+      metrics.serverStarted('controller');
+      log.info("controller running on " + config.bind_address + ":" +
+        config.controller_server_port);
+      log.info("talking to " + config.generator_endpoint);
+    });
 });
