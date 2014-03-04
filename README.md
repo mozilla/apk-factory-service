@@ -86,6 +86,7 @@ Unit tests
 
 Integration tests
 
+     $ INT_TESTING=true npm start
      $ ./node_modules/.bin/tap --timeout=120 int-test/integration-test.js
 
 or to target a different environment
