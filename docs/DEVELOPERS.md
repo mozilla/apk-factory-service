@@ -1,8 +1,6 @@
-Developer Docs
-==============
+# Developer Docs
 
-Requirements
-------------
+## Requirements
 
 * NodeJS
 * Java
@@ -13,8 +11,7 @@ Running the service
 
     npm start
 
-NodeJS Coding Style
--------------------
+## NodeJS Coding Style
 
 Use NodeJS callback error style. All errors should be wrapped
 in an Error at the point they are noted. Errors passed up the
@@ -38,8 +35,7 @@ crashing, as they are restarted and managed at a higher level.
 
     js-beautify -s 2 -r -f some_file.js
 
-Useful Tools
-------------
+## Useful Tools
 
 * java -jar lib/ext/apktool.jar d some.apk some
 * jarsigner -verify -verbose some.apk
