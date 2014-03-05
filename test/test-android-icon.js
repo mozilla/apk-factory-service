@@ -27,42 +27,50 @@ const data = [
 tap.test("Given OWA Icons, we can produce Android compatible Icons", function(test) {
   var pathPrefix = path.join(__dirname, 'data', 'android-icon', 'reference');
   var goldenPrefix = path.join(__dirname, 'data', 'android-icon', 'golden');
-  var tmp =  path.join(__dirname, 'data', 'android-icon', 'tmp');
+  var tmp = path.join(__dirname, 'data', 'android-icon', 'tmp');
   try {
     fs.mkdirSync(tmp);
   } catch (e) {}
-  var i=0;
+  var i = 0;
   var end = function(x) {
-    return function () {
-                    setTimeout(function() {
-		      console.log('Going here', x);
-  		      if (0 === x) {
-                        fsExtra.rmrf(tmp, function() {
-			  test.end();
-			});
-		      }
-		    }, 100);
+    return function() {
+      setTimeout(function() {
+        console.log('Going here', x);
+        if (0 === x) {
+          fsExtra.rmrf(tmp, function() {
+            test.end();
+          });
+        }
+      }, 100);
     };
   }
   data.forEach(function(datum) {
     i++;
     var inputFile = path.join(pathPrefix, datum[0]);
     var tmpFile = path.join(tmp, 'icon' + datum[0] + Math.random());
+
     icon.optimize(inputFile,
-		  64, 64,
-		  tmpFile,
-		  function(err, filename) {
-		    i--;
-                    if (null === datum[1]) {
-		      test.ok(!!err, 'We expected some kind of err' + err);
-                      end(i)();
-		    } else {
-                      testFileEquals(test, filename, path.join(goldenPrefix, datum[1]), function() {
-  		        end(i)();
-		      });
-		    }
-// TODO test that the icon matches the golden image
-		  });
+      64, 64,
+      tmpFile,
+      function(err, filename) {
+        i--;
+        if (err && null !== datum[1]) {
+          test.ok(!err, 'There should not be GraphicsMagick errors ' + err.toString());
+          console.log('AOK AOK ', filename);
+          return end(i)();
+        }
+
+
+        if (null === datum[1]) {
+          test.ok( !! err, 'We expected some kind of err' + err);
+          end(i)();
+        } else {
+          testFileEquals(test, filename, path.join(goldenPrefix, datum[1]), function() {
+            end(i)();
+          });
+        }
+        // TODO test that the icon matches the golden image
+      });
   });
 });
 
@@ -80,8 +88,8 @@ function testFileEquals(test, fileA, fileB, cb) {
       }
       console.log('Comparing', fileA, fileB);
       test.equal(fileAData.toString('utf8'),
-                 fileBData.toString('utf8'),
-                 "Image file contents should match");
+        fileBData.toString('utf8'),
+        "Image file contents should match");
       cb();
     });
   });
