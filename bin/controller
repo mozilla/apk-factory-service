@@ -11,6 +11,7 @@ process.env.PROCESS_TYPE = 'apk-controller';
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 
 var express = require('express');
+var raven = require('raven');
 var request = require('request');
 var toobusy = require('../lib/busy_middleware.js');
 
@@ -34,6 +35,8 @@ config.withConfig(function(config) {
 
   app.use(express.bodyParser());
 
+  app.use(raven.middleware.express(config.sentryDSN));
+
   app.get('/application.apk', function(req, res) {
     var start = new Date();
 
@@ -48,15 +51,9 @@ config.withConfig(function(config) {
 
     metrics.generateApkRequest(manifestUrl);
 
-    frontController(manifestUrl, appType, config, function(s3res) {
-      if (s3res.statusCode !== 200) {
-        var err = 'controller unable to load ' + s3res.req.path +
-          ' from S3. Status Code: ' + s3res.statusCode;
-        console.log(err);
-        res.type("text/plain");
-        res.send(400, err);
-        metrics.generationApkFailed();
-        return;
+    frontController(manifestUrl, appType, config, function(err, s3res) {
+      if (err) {
+        return _genApkFailed(res, err);
       }
       res.type("application/vnd.android.package-archive");
       res.status(200);
@@ -69,6 +66,13 @@ config.withConfig(function(config) {
       });
     });
   });
+
+  function _genApkFailed(res, err) {
+    log.error(err);
+    res.type("text/plain");
+    res.send(400, err);
+    metrics.generationApkFailed();
+  }
 
   app.post('/app_updates', function(req, res) {
     var start = new Date();
@@ -88,7 +92,8 @@ config.withConfig(function(config) {
 
   if (['development', 'review'].indexOf(config.environment) !== -1) {
     app.post('/cli_build', function(req, res) {
-      cliDevBuild(req.body, config, function(err, apk) {
+      var start = new Date();
+      cliDevBuild(req.body, config, function(err, s3res) {
         var status = 'okay';
         var msg = '';
         var bApk = null;
@@ -97,14 +102,25 @@ config.withConfig(function(config) {
           msg = err;
           log.error(err);
         } else {
-          bApk = new Buffer(apk.Body, 'binary').toString('base64');
+          var buf = [];
+          res.type("application/vnd.android.package-archive");
+          res.status(200);
+          s3res.on('data', function(chunk) {
+            buf.push(chunk);
+          });
+          s3res.on('end', function() {
+            bApk = Buffer.concat(buf).toString('base64');
+
+            res.set('Content-Type', 'application/json');
+            res.send(JSON.stringify({
+              status: status,
+              apk: bApk,
+              message: msg
+            }));
+
+            metrics.generationApkFinished(new Date() - start);
+          });
         }
-        res.set('Content-Type', 'application/json');
-        res.send(JSON.stringify({
-          status: status,
-          apk: bApk,
-          message: msg
-        }));
       });
     });
   }

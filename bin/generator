@@ -12,6 +12,7 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 var express = require('express');
 var hawk = require('hawk');
 
+var raven = require('raven');
 var toobusy = require('../lib/busy_middleware.js');
 
 var argv = require('../lib/cli_common_argv');
@@ -58,6 +59,8 @@ config.withConfig(function(config) {
     });
   }
 
+  app.use(raven.middleware.express(config.sentryDSN));
+
   app.use(function(req, res, next) {
     var start = new Date();
     if ('/build' === req.path) {
@@ -72,16 +75,15 @@ config.withConfig(function(config) {
       apkSystem.signer(req, res, log);
     } else if ('/system/authz' === req.path) {
       withHawk(req, res, next, apkSystem.authz);
+
+    } else if ('/' === req.path) {
+      res.status(200);
+      res.type("text/text");
+      res.send("200 Server OK");
     } else {
       log.info('Huh. No route for ' + req.path);
       next();
     }
-  });
-
-  app.get("/", function(req, res) {
-    res.status(200);
-    res.type("text/text");
-    res.send("200 Server OK");
   });
 
   process.stdout.write('listening on ', config.generator_server_port);

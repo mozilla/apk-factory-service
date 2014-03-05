@@ -1,8 +1,6 @@
-Developer Docs
-==============
+# Developer Docs
 
-Requirements
-------------
+## Requirements
 
 * NodeJS
 * Java
@@ -11,20 +9,34 @@ Requirements
 
 Running the service
 
-    cd builder
-    ./run-server.sh
+    npm start
 
-Options
--------
+## NodeJS Coding Style
 
-To override the bind address, use `VCAP_APP_HOST`
+Use NodeJS callback error style. All errors should be wrapped
+in an Error at the point they are noted. Errors passed up the
+stack should not be re-declared.
 
-To override the port, use --port
+Examples:
 
-    VCAP_APP_HOST=192.168.186.138 ./run-server.sh --port=8000
+    if(! option.hamsterDance) {
+      cb(new Error('hamsterDance is a required option');
+    }
 
+    request(opts, function(err, res, body) {
+      if (err) return cb(err);
+      ...
+    }
 
-Useful Tools
-------------
+Using `Error` provides good exceptions which are logged to sentry.
 
+Services should handle errors in a sane way and not be shy about
+crashing, as they are restarted and managed at a higher level.
+
+    js-beautify -s 2 -r -f some_file.js
+
+## Useful Tools
+
+* java -jar lib/ext/apktool.jar d some.apk some
+* jarsigner -verify -verbose some.apk
 * Test Manifests http://testmanifest.com/
