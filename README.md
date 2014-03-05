@@ -24,7 +24,7 @@ APT-based Linux:
 
 Mac OS X with brew:
 
-    brew install tiff graphicsmagick mariadb
+    brew install libtiff graphicsmagick mariadb
 
 Installation
 ------------
