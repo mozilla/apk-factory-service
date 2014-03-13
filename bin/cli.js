@@ -61,7 +61,7 @@ var manifestUrl = argv.manifest;
 var loaderDirname;
 
 if (/^\w+:\/\//.test(manifestUrl)) {
-  loaderDirname = url.resolve(manifestUrl, ".");
+  loaderDirname = manifestUrl;
 } else {
   loaderDirname = path.dirname(path.resolve(process.cwd(), manifestUrl));
 }
