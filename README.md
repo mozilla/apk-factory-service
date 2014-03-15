@@ -96,7 +96,24 @@ or to target a different environment
 Deployment
 ----------
 
-A development server is available at http://dapk.net.
+### Production
+
+* Release https://controller.apk.firefox.com
+* Review https://controller-review.apk.firefox.com
+
+### Stage
+
+* Release https://apk-controller.stage.mozaws.net
+* Review https://apk-controller-review.stage.mozaws.net
+
+### Dev
+
+Dev server is automatically deployed from master after a commit
+
+https://apk-controller.dev.mozaws.net
+
+### OLD Dev Server
+A **former** development server is available at http://dapk.net.
 
 Some notes on how its process is started up:
 
