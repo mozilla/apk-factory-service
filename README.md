@@ -66,7 +66,9 @@ servers like:
 If everything is configured you should be able to post a manifest to your controller
 and get a binary APK response. Try this:
 
-    curl -v 'http://127.0.0.1:8080/application.apk?manifestUrl=http://eland2583.testmanifest.com/manifest.webapp'
+    curl -v 'http://127.0.0.1:8080/application.apk?manifestUrl=http://deltron3030.testmanifest.com/manifest.webapp'
+
+    curl -v -H "Content-Type: application/json" -X POST -d '{ "installed":{"http://deltron3030.testmanifest.com/manifest.webapp":1394909578}}' https://localhost:8080/app_updates
 
 You can generate manifests at [testmanifest.com](http://testmanifest.com/).
 
@@ -87,7 +89,7 @@ Unit tests
 Integration tests
 
      $ INT_TESTING=true npm start
-     $ ./node_modules/.bin/tap --timeout=120 int-test/integration-test.js
+     $ ./node_modules/.bin/tap --timeout=999999 int-test/integration-test.js
 
 or to target a different environment
 
