@@ -61,6 +61,13 @@ Controls where log files are written
 
     varPath = './var';
 
+### logLevel
+
+Controls how verbose logging is. Must be one of `debug`, `info`, `warn`, or
+`error`. Logs that level and anything more important.
+
+    logLevel = 'info';
+
 ### hawk
 Hawk authentication nested config of `key`, `algorithm`, and `id`.
 **values must match** between controller, generator, and **APK Signer**
@@ -70,6 +77,25 @@ Hawk authentication nested config of `key`, `algorithm`, and `id`.
       algorithm: 'sha256',
       id: 'apk-factory'
     }
+
+### statsd
+
+Important metrics or events are sent to statsd.
+Stats will be written to apk-controller-release
+or apk-generator-review, so it is safe to use
+the same statsd instance for reviewer and release
+for a given environment like production.
+
+    statsd = {
+      host: 'localhost',
+      port: 8125
+    }
+
+### sentryDSN
+
+Sentry logging endpoint. App update states are written to Sentry.
+
+sentryDSN = 'udp://shomesha:othersha@somewhere.com:someport/somenumber'
 
 ## Controller Only Config
 
@@ -82,6 +108,12 @@ Use the specific port for the front controller HTTP server
 Controller uses this endpoint to contact the generator.
 
     generator_endpoint = 'https://apk-generator-release.mozilla.org'
+
+### manifestCacheTTL
+
+Manfiests are cached for this number of seconds
+
+    manifestCacheTTL=60
 
 ### mysql
 

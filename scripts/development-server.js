@@ -17,6 +17,10 @@ if (!process.env['CONFIG_FILES']) {
     path.join(__dirname, '..', 'config', 'default.js'),
     path.join(__dirname, '..', 'config', 'developer.js')
   ];
+  console.log(process.env['INT_TESTING']);
+  if (process.env['INT_TESTING']) {
+    c.push(path.join(__dirname, '..', 'config', 'integration.js'));
+  }
   process.env['CONFIG_FILES'] = c.join(',');
   console.log(process.env['CONFIG_FILES']);
 }

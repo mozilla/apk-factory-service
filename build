@@ -19,6 +19,12 @@ build_rpm() {
     git clone https://github.com/mozilla/apk-factory-library.git
     popd 
 
+    # clean npm cache
+    npm cache clean
+
+    # recompile
+    npm rebuild --no-bin-links
+
     pushd "${ROOT}"/../
 
     fpm -s dir -t rpm \

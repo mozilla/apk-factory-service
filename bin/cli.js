@@ -14,10 +14,6 @@ var url = require('url');
 var optimist = require('optimist');
 var request = require('request');
 
-var fileLoader = require('../lib/file_loader');
-var frontController = require('../lib/front_controller');
-var owaDownloader = require('../lib/owa_downloader');
-
 var argv = optimist
   .usage('Usage: $0 {OPTIONS}')
   .wrap(80)
@@ -26,7 +22,10 @@ var argv = optimist
   })
   .option('endpoint', {
     desc: "The URL for the APK Factory Service",
-  default: "https://apk-review.mozilla.org"
+    default: "https://apk-review.mozilla.org"
+  })
+  .option('config-files', {
+    default: 'config/default.js,config/cli.js'
   })
   .option('help', {
     alias: "?",
@@ -42,7 +41,7 @@ var argv = optimist
     argv.manifest = argv._[0];
     argv.output = argv._[1];
     if (-1 === argv.manifest.indexOf('://')) {
-      if (! argv.overrideManifest) {
+      if (!argv.overrideManifest) {
         console.log('local manifest file should be used with --overrideManifest option');
         argv.help();
         process.exit(1);
@@ -51,15 +50,20 @@ var argv = optimist
   })
   .argv;
 
+var config = require('../lib/config');
+config.init(argv);
+
+var fileLoader = require('../lib/file_loader');
+var owaDownloader = require('../lib/owa_downloader');
+
 // manifest is used for owaDownloader
 var manifestUrl = argv.manifest;
 var loaderDirname;
 
 if (/^\w+:\/\//.test(manifestUrl)) {
-  loaderDirname = url.resolve(manifestUrl, ".");
+  loaderDirname = manifestUrl;
 } else {
   loaderDirname = path.dirname(path.resolve(process.cwd(), manifestUrl));
-  console.log('loaderDirname', loaderDirname);
 }
 
 var loader = fileLoader.create(loaderDirname);
@@ -70,10 +74,10 @@ owaDownloader(argv.manifest, argv.overrideManifest, loader, appBuildDir, owaCb);
 
 function owaCb(err, manifest, appType, zip) {
   if (err) {
-    return console.error(err);
+    console.error(err);
     process.exit(1);
   }
-  if (!! argv.overrideManifest) {
+  if ( !! argv.overrideManifest) {
     manifestUrl = argv.overrideManifest;
   }
   cliClient(manifestUrl, manifest, zip, argv, function(err, apk) {
@@ -81,16 +85,22 @@ function owaCb(err, manifest, appType, zip) {
     if (!err) {
       if (argv.output) {
         output = path.resolve(process.cwd(), argv.output);
-        fs.writeFile(output, apk, {encoding: 'binary'}, function(err) {
+        fs.writeFile(output, apk, {
+          encoding: 'binary'
+        }, function(err) {
           if (err) {
             console.log(err);
             process.exit(1);
           }
+          console.log('APK file is available at ' + argv.output);
+          process.exit(0);
         });
       }
     } else {
       console.error(err);
+      process.exit(1);
     }
+
   });
 }
 
@@ -115,7 +125,7 @@ function cliClient(manifestUrl, manifest, zip, argv, cb) {
       if ('okay' === data.status) {
         cb(null, new Buffer(data.apk, 'base64').toString('binary'));
       } else {
-        cb('Error in generator - ' + body);      
+        cb('Error in generator - ' + body);
       }
     }
   });

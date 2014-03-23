@@ -12,6 +12,7 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 var express = require('express');
 var hawk = require('hawk');
 
+var raven = require('raven');
 var toobusy = require('../lib/busy_middleware.js');
 
 var argv = require('../lib/cli_common_argv');
@@ -39,18 +40,18 @@ config.withConfig(function(config) {
   function withHawk(req, res, next, onAuthZ) {
     var port = config.hawkPublicServerPort;
     hawk.server.authenticate(req, function(id, cb) {
-      console.log('incoming Hawk request for', id);
+      log.info('incoming Hawk request for ' + id);
       cb(null, config.hawk);
     }, {port: port}, function(err, credentials, artifacts) {
       credentials = credentials || {};
       if(err) {
-        console.log('Hawk error:', err);
-        console.log('Bad hawk credentials for id=' + credentials.id);
-        console.log('Failed Hawk artifacts; id=', credentials.id, 'artifacts=',
-                    artifacts);
-        console.log('Approximate Hawk local time in seconds:',
+        log.error('Bad hawk credentials for id=' + credentials.id);
+        log.error(err);
+
+        log.debug('Failed Hawk artifacts; id=' + credentials.id + ' artifacts=',
+           artifacts);
+        log.info('Approximate Hawk local time in seconds: ' +
                     hawk.utils.now() / 1000);
-        console.error('Hawk error for id=', credentials.id, 'Error:', err);
         res.send('Access denied', 401);
         return;
       }
@@ -58,31 +59,34 @@ config.withConfig(function(config) {
     });
   }
 
+  app.use(raven.middleware.express(config.sentryDSN));
+
   app.use(function(req, res, next) {
+    var start = new Date();
     if ('/build' === req.path) {
       withHawk(req, res, next, function(req, res) {
         var post = req.body;
 
         if (! post.manifest.url) throw new Error('missing url');
-        generator.generate(post.manifest, post.zip, post.loadDir, genCb(res));
+        generator.generate(post.manifest, post.zip, post.loadDir,
+                           genCb(res, post.manifest.url, start, log));
       });
     } else if ('/system/signer' === req.path) {
-      apkSystem.signer(req, res, next);
+      apkSystem.signer(req, res, log);
     } else if ('/system/authz' === req.path) {
       withHawk(req, res, next, apkSystem.authz);
+
+    } else if ('/' === req.path) {
+      res.status(200);
+      res.type("text/text");
+      res.send("200 Server OK");
     } else {
-      console.log('Huh. No route for ' + req.path);
+      log.info('Huh. No route for ' + req.path);
       next();
     }
   });
 
-  app.get("/", function(req, res) {
-    res.status(200);
-    res.type("text/text");
-    res.send("200 Server OK");
-  });
-
-  console.log('listening on ', config.generator_server_port);
+  process.stdout.write('listening on ', config.generator_server_port);
   app.listen(config.generator_server_port,
              config.bind_address,
              function() {
@@ -92,15 +96,19 @@ config.withConfig(function(config) {
               });
 });
 
-function genCb(res) {
+function genCb(res, manifesturl, start, log) {
   return function (err, apkFileLocation) {
     res.set('Content-Type', 'application/json');
     if (err) {
+      log.error(err.stack);
+      metrics.buildingApkFailed(manifesturl);
       res.send({
         status: "error",
         message: err
       });
     } else {
+      log.info('Generation of APK complete [' + manifesturl + '] streaming back');
+      metrics.buildingApkFinished(manifesturl, new Date() - start);
       res.send({
         status: "okay",
         apkFileLocation: apkFileLocation

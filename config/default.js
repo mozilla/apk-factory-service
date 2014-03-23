@@ -61,6 +61,9 @@ generator_server_port = 8081;
 // Env variable: GENERATOR_ENDPOINT
 generator_endpoint = 'http://127.0.0.1:' + generator_server_port;
 
+// Number of seconds manifests can be cached for
+manifestCacheTTL=60
+
 // CLI argument: --aws-access-key-id
 // Env variable: AWS_ACCESS_KEY_ID
 awsAccessKeyId = 'SETME';
@@ -74,6 +77,17 @@ awsS3PrivateBucket = 'apk-temp';
 
 // Logging defaults to creating a var dir in the top level of this project
 varPath = './var';
+
+// Log Level - debug, info, warn, or error
+logLevel = 'info';
+
+statsd = {
+  host: 'localhost',
+  port: 8125
+}
+
+// Sentry Config
+sentryDSN = 'udp://shomesha:othersha@somewhere.com:someport/somenumber'
 
 
 // URL to the APK Signer server without any paths and without a trailing
