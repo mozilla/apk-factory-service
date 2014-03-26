@@ -9,6 +9,14 @@ var path = require('path');
 
 var tap = require('tap');
 
+process.env['FILESYSTEM_BUILD'] = '/tmp/test';
+process.env['FILESYSTEM_CACHE'] = '/tmp/test';
+process.env['CONFIG_FILES'] = path.join(__dirname, 'data', 'default_config.js');
+var config = require('../lib/config');
+config.init({
+  'config-files': process.env['CONFIG_FILES']
+});
+
 var buildQueue = require('../lib/build_queue');
 var log = require('./common/mock_log');
 
@@ -17,22 +25,22 @@ process.env['CONFIG_FILES'] = path.join(__dirname, 'data', 'default_config.js');
 
 tap.test("Build queue controls execution of building per manifest", function(test) {
   var state1;
-  buildQueue('state1', log, function(finishedCb) {
+  buildQueue('state1', config, log, function(finishedCb) {
     test.equal(state1, undefined, 'This is the first piece of work to run');
     state1 = 1;
     finishedCb();
   });
-  buildQueue('state1', log, function(finishedCb) {
+  buildQueue('state1', config, log, function(finishedCb) {
     test.equal(state1, 1, 'This is the second piece of work to run');
     state1 = 2;
     finishedCb();
   });
-  buildQueue('state1', log, function(finishedCb) {
+  buildQueue('state1', config, log, function(finishedCb) {
     test.equal(state1, 2, 'This is the third piece of work to run');
     state1 = 3;
     finishedCb();
   });
-  buildQueue('state1', log, function(finishedCb) {
+  buildQueue('state1', config, log, function(finishedCb) {
     test.equal(state1, 3, 'This is the third piece of work to run');
     state1 = 4;
     finishedCb();
@@ -45,7 +53,7 @@ tap.test("Build queue handles multiple manifest urls", function(test) {
   var state2;
   var state3;
   test.equal(state1, undefined);
-  buildQueue('state1', log, function(finishedCb) {
+  buildQueue('state1', config, log, function(finishedCb) {
     setTimeout(function() {
       test.equal(state1, undefined, 'This is the first piece of state1 work to run');
       state1 = 1;
@@ -55,12 +63,12 @@ tap.test("Build queue handles multiple manifest urls", function(test) {
     }, 100);
 
   });
-  buildQueue('state2', log, function(finishedCb) {
+  buildQueue('state2', config, log, function(finishedCb) {
     test.equal(state2, undefined, 'This is the first piece of state2 work to run');
     state2 = 1;
     finishedCb();
   });
-  buildQueue('state3', log, function(finishedCb) {
+  buildQueue('state3', config, log, function(finishedCb) {
     setTimeout(function() {
       test.equal(state3, undefined, 'This is the first piece of state3 work to run');
       state3 = 3;
@@ -69,17 +77,17 @@ tap.test("Build queue handles multiple manifest urls", function(test) {
       test.end();
     }, 500);
   });
-  buildQueue('state1', log, function(finishedCb) {
+  buildQueue('state1', config, log, function(finishedCb) {
     test.equal(state1, 1, 'This is the second piece of state1 work to run');
     state1 = 2;
     finishedCb();
   });
-  buildQueue('state2', log, function(finishedCb) {
+  buildQueue('state2', config, log, function(finishedCb) {
     test.equal(state2, 1, 'This is the second piece of state2 work to run');
     state2 = 2;
     finishedCb();
   });
-  buildQueue('state1', log, function(finishedCb) {
+  buildQueue('state1', config, log, function(finishedCb) {
     test.equal(state1, 2, 'This is the third piece of state1 work to run');
     state1 = 3;
     finishedCb();
