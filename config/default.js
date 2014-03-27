@@ -112,3 +112,9 @@ hawk = {
 
 // Public port # for generator urls
 hawkPublicServerPort = 8081;
+
+// Controller only
+buildQueuePollFrequencyInMilliseconds = 10 * 1000;
+
+// Controller only
+buildQueueStalePeriod = 20 * 60 * 1000; // 20 minutes ago
