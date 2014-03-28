@@ -112,3 +112,7 @@ hawk = {
 
 // Public port # for generator urls
 hawkPublicServerPort = 8081;
+
+
+// Release mode, path to debug.keystore for ant debug
+debugKeystorePath = '/tmp/';
