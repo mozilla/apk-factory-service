@@ -44,6 +44,7 @@ for common setup instructions.
 You'll need to expose the SDK path with something like this:
 
     export ANDROID_HOME=~/Downloads/adt-bundle-mac/sdk/
+    export ANDROID_SDK_HOME=$ANDROID_HOME
 
 You need to have API 19 (or maybe higher?). Check for
 `adt-bundle-mac/sdk/platforms/android-19/`.
