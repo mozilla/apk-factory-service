@@ -23,8 +23,6 @@ config.init({
   "config-files": configFiles.join(','),
 });
 
-console.log(config);
-
 var buildQueue = require('../lib/build_queue');
 var log = {
   debug: function() {console.log(arguments);},
@@ -40,17 +38,12 @@ tap.test("Build queue controls execution of building per manifest", function(tes
   config.withConfig(function(config) {
     emptyBuildQueue(config, function() {
       var state1;
-      console.log('queueing state1');
       buildQueue('state1', config, log, function(finishedCb) {
-      console.log('got lock');
         test.equal(state1, undefined, 'This is the first piece of work to run');
         state1 = 1;
-        console.log('calling finished');
         finishedCb();
       });
-      console.log('asking for state1 again');
       buildQueue('state1', config, log, function(finishedCb) {
-      console.log('got state1 again');
         test.equal(state1, 1, 'This is the second piece of work to run');
         state1 = 2;
         finishedCb();
@@ -102,9 +95,8 @@ tap.test("Build queue handles multiple manifest urls", function(test) {
           setTimeout(function() {
             testBuildQueueEmpty(test, config, function() {
               // BEWARE: putting test.end here as this happens 500 millis in, fragile...
-             console.log('Calling test.end');
-             test.end();
-           });
+              test.end();
+            });
           }, 100);
         }, 500);
       });
@@ -144,34 +136,26 @@ tap.test("Multiple servers", function(test) {
 
               var state1 = null;
 
-              console.log('SETUP buildQueue failedBuild 1');
-      buildQueue('failedBuild', config, log, function(finishedCb) {
-              console.log('RUNNING buildQueue failedBuild 1');
-        setTimeout(function() {
-          test.equal(state1, null, 'State build lock expired');
-          state1 = 1;
-          finishedCb();
-        }, 1000);
-      });
+              buildQueue('failedBuild', config, log, function(finishedCb) {
+                setTimeout(function() {
+                  test.equal(state1, null, 'State build lock expired');
+                  state1 = 1;
+                  finishedCb();
+                }, 1000);
+              });
 
-              console.log('SETUP buildQueue failedBuild 2');
-      buildQueue('failedBuild', config, log, function(finishedCb) {
-              console.log('RUNNING buildQueue failedBuild 2');
-        setTimeout(function() {
-          test.equal(state1, 1, 'Second build lock on failedBuild went through');
-          state1 = 2;
-          finishedCb();
+              buildQueue('failedBuild', config, log, function(finishedCb) {
+                setTimeout(function() {
+                  test.equal(state1, 1, 'Second build lock on failedBuild went through');
+                  state1 = 2;
+                  finishedCb();
 
-           setTimeout(function() {
-                test.end();
-                shouldExit = true;
-              }, 1000);
-      });
-
-
-      }, 2000);
-              
-              
+                  setTimeout(function() {
+                    test.end();
+                    shouldExit = true;
+                  }, 1000);
+                });
+              }, 2000);
             });
   });
 });
@@ -182,33 +166,30 @@ setInterval(function() {
 
 
 function emptyBuildQueue(config, cb) {
-  console.log('clearing');
-    var conn = mysql.createConnection(config.mysql);
-    conn.connect();
-    conn.query('DELETE FROM apk_build_lock', null, function(err, rows) {
-      conn.end();
-  console.log('cleared');
-      cb();
-    });
+  var conn = mysql.createConnection(config.mysql);
+  conn.connect();
+  conn.query('DELETE FROM apk_build_lock', null, function(err, rows) {
+    conn.end();
+    cb();
+  });
 }
 
 function testBuildQueueEmpty(test, config, cb) {
-    var conn = mysql.createConnection(config.mysql);
-    conn.connect();
-    conn.query('SELECT * FROM apk_build_lock', null, function(err, rows) {
-      conn.end();
-      test.equal(false, !!err);
-      console.log(rows);
-      test.equal(0, rows.length);
-      cb();
-    });
+  var conn = mysql.createConnection(config.mysql);
+  conn.connect();
+  conn.query('SELECT * FROM apk_build_lock', null, function(err, rows) {
+    conn.end();
+    test.equal(false, !!err);
+    test.equal(0, rows.length);
+    cb();
+  });
 }
 
 function doQuery(sql, config, cb) {
-    var conn = mysql.createConnection(config.mysql);
-    conn.connect();
-    conn.query(sql, null, function(err, rows) {
-      conn.end();
-      cb(err, rows);
-    });
+  var conn = mysql.createConnection(config.mysql);
+  conn.connect();
+  conn.query(sql, null, function(err, rows) {
+    conn.end();
+    cb(err, rows);
+  });
 }
