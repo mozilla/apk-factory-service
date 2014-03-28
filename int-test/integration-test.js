@@ -71,7 +71,7 @@ config.withConfig(function(config) {
         test.notOk(err, err + ' ' + stderr);
         fs.readFile(path.join('decoded', 'AndroidManifest.xml'), opt, this);
       },
-      function checkApplicationZip(err, xml) {
+      function checkApplicationZip(err/*, xml*/) {
         test.notOk(err, 'We read AndroidManifest.xml');
         // xml.indexOf('android:versionName="' + manifest.version) !== -1
         if ( !! manifest.package_path) {
@@ -169,7 +169,7 @@ config.withConfig(function(config) {
         test.notOk(err, 'apktool 1 check');
         test.end();
       }
-    )
+    );
   });
 
   tape('We can build a hosted app', function(test) {
@@ -193,7 +193,7 @@ config.withConfig(function(config) {
       function(err) {
         test.notOk(err, 'apktool 2 check');
         test.end();
-      })
+      });
   });
 
   tape('We can get a cached packaged app', function(test) {
@@ -215,7 +215,7 @@ config.withConfig(function(config) {
         test.notOk(err);
         test.end();
       }
-    )
+    );
   });
 
   tape('We can get a cached hosted app', function(test) {
@@ -254,7 +254,7 @@ config.withConfig(function(config) {
           alwaysUpdatingManifest;
         request(alwaysUpdatingUrl, this);
       },
-      function afterGet1(err, res, body) {
+      function afterGet1(err, res/*, body*/) {
         test.notOk(err, 'get request has no eror');
         test.equal(200, res.statusCode, 'get request was 200');
         var that = this;
@@ -263,7 +263,7 @@ config.withConfig(function(config) {
           conn.connect();
           conn.query('SELECT id, version, manifest_hash, library_version' +
             ' FROM apk_metadata WHERE manifest_url = ?', [alwaysUpdatingManifest],
-            function(err, rows, fields) {
+            function(err, rows) {
               conn.end();
               test.equal(1, rows.length, 'We have one metadata record');
               that(err, rows[0]);
@@ -286,7 +286,7 @@ config.withConfig(function(config) {
           request(alwaysUpdatingUrl, that);
         }, 2000);
       },
-      function afterCurl2(err, res, body) {
+      function afterCurl2(err, res/*, body*/) {
         test.notOk(err, 'no error from request');
         test.equal(200, res.statusCode, 'request is 200');
         var that = this;
@@ -295,7 +295,7 @@ config.withConfig(function(config) {
           conn.connect();
           conn.query('SELECT id, version, manifest_hash, library_version' +
             ' FROM apk_metadata WHERE manifest_url = ?', [alwaysUpdatingManifest],
-            function(err, rows, fields) {
+            function(err, rows) {
               conn.end();
               that(err, rows[0]);
             });
@@ -316,7 +316,7 @@ config.withConfig(function(config) {
           conn.connect();
           conn.query('SELECT version, manifest_url' +
             ' FROM apk_metadata', [],
-            function(err, rows, fields) {
+            function(err, rows) {
               conn.end();
               that(err, rows);
             });
