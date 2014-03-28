@@ -21,9 +21,8 @@ module.exports = function(cb) {
       }
     }));
   });
-  server.listen(0, '0.0.0.0', function(err, a, b) {
-    console.log('server.listen', err, a, b);
+  server.listen(0, '0.0.0.0', function(err) {
     console.log(server.address());
-    cb(null, server);
+    cb(err, server);
   });
 };

@@ -1,10 +1,10 @@
 /**
- * Run under tap, integration tests this development server.
+ * Run under tape, integration tests this development server.
  * Optionally run against a different environment via
  * APK_ENDPOINT
  * Example:
 
- $ APK_ENDPOINT='http://dapk.net' tap int-test/integration-test.js
+ $ APK_ENDPOINT='http://dapk.net' tape int-test/integration-test.js
 
 */
 process.env.APK_HASH_TTL = 1000;
@@ -17,7 +17,7 @@ var fsExtra = require('fs.extra');
 var mysql = require('mysql');
 var request = require('request');
 var Step = require('step');
-var tap = require('tap');
+var tape = require('tape');
 
 var desreUrl = 'http://people.mozilla.org/~fdesre/openwebapps/package.manifest';
 var deltronUrl = 'http://deltron3030.testmanifest.com/manifest.webapp';
@@ -110,7 +110,7 @@ config.withConfig(function(config) {
   }
 
   var desreManifest, deltronManifest;
-  tap.test('Manifests are available', function(test) {
+  tape('Manifests are available', function(test) {
     Step(
       function getDesreUrl() {
         request(desreUrl, this);
@@ -130,7 +130,7 @@ config.withConfig(function(config) {
     );
   });
 
-  tap.test('Components integrated behave as expected', function(test) {
+  tape('Components integrated behave as expected', function(test) {
     Step(
       function rmCache() {
         var that = this;
@@ -172,7 +172,7 @@ config.withConfig(function(config) {
     )
   });
 
-  tap.test('We can build a hosted app', function(test) {
+  tape('We can build a hosted app', function(test) {
     Step(
       function curl2() {
         var r = request(makeUrl(deltronUrl)).pipe(fs.createWriteStream('t'));
@@ -196,7 +196,7 @@ config.withConfig(function(config) {
       })
   });
 
-  tap.test('We can get a cached packaged app', function(test) {
+  tape('We can get a cached packaged app', function(test) {
     Step(
       function curl3() {
 
@@ -218,7 +218,7 @@ config.withConfig(function(config) {
     )
   });
 
-  tap.test('We can get a cached hosted app', function(test) {
+  tape('We can get a cached hosted app', function(test) {
     Step(
       function curl4() {
         var r = request(makeUrl(deltronUrl)).pipe(fs.createWriteStream('t'));
@@ -238,7 +238,7 @@ config.withConfig(function(config) {
     );
   });
 
-  tap.test('DB can handle updates', function(test) {
+  tape('DB can handle updates', function(test) {
     var server, serverPort, alwaysUpdatingManifest, alwaysUpdatingUrl;
     var conn, id, version, libraryVersion;
     Step(
@@ -337,6 +337,9 @@ config.withConfig(function(config) {
         rows.forEach(function(row) {
           data.installed[row.manifest_url] = row.version;
         });
+
+        // Add an app that doesn't exist, it should not be reported as out of date
+        data.installed['http://ozten.com/nonesuch/manifest.webapp'] = 1;
         setTimeout(function() {
           request({
             method: 'POST',
@@ -346,7 +349,7 @@ config.withConfig(function(config) {
               'Content-Type': 'application/json'
             }
           }, that);
-        }, 2000);
+        }, 2000);// Wait out INT_TESTING caching
       },
       function afterAppUpdateRequest(err, res, body) {
         test.notOk(err, 'No error for request to app_updates');
