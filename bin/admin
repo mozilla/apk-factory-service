@@ -1,0 +1,87 @@
+#!/usr/bin/env node
+
+/* vim: set filetype=javascript : */
+
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+var fs = require('fs');
+var path = require('path');
+var url = require('url');
+var vm = require('vm');
+
+var optimist = require('optimist');
+var request = require('request');
+
+var argv = optimist
+  .usage('Usage: $0 [OPTIONS] --endpoint=http://example.com COMMAND\n\nCOMMAND is one of ' +
+         '[ clear-cached-apk | clear-all-apks ]\n' +
+         '\t$0 --endpoint=http://example.com clear-cached-apk http://example.com/manifest.webapp\n' +
+         '\t$0 --endpoint=http://example.com clear-all-apks\n\n' +
+         'clear-all-apks should not be used lightly!!!')
+
+  .option('endpoint', {
+    alias: 'e',
+    demand: true
+  })
+
+  .option('config', {
+    alias: 'c',
+    "default": path.resolve(__dirname, '..', 'config', 'admin.js')
+  })
+
+  .check(function(args) {
+    console.log('checking', args._);
+    // COMMANDs
+    if (0 === args._.length) {
+      throw new Error('Missing COMMAND');
+    } else if ('clear-cached-apk' === args._[0]) {
+      if (2 !== args._.length) {
+        throw new Error('Missing APK mini-manfiest URL for clear-cached-apk');
+      }
+    } else if ('clear-all-apks' === args._[0]) {
+      if (1 !== args._.length) {
+        throw new Error('Too many arguments to clear-all-apks');
+      }
+    } else {
+      throw new Error('Unknown COMMAND');
+    }
+
+    // Admin Config
+    if (false === fs.existsSync(args.config)) {
+      throw new Error('Admin config file required, unable to use ' + args.config);
+    }
+  })
+  .argv;
+
+var config = vm.createContext();
+vm.runInContext(fs.readFileSync(argv.config), config, argv.config);
+
+var params = {
+  command: argv._[0]
+};
+
+if ('clear-cached-apk' === argv._[0]) {
+  params.manifestUrl = argv._[1];
+}
+
+var adminEndpoint = url.resolve(argv.endpoint, '/admin');
+console.log('Using ', adminEndpoint);
+
+var body = JSON.stringify(params);
+
+request({
+  url: adminEndpoint,
+  method: 'POST',
+  body: body,
+  headers: {
+    "Content-Type": "application/json"
+  },
+  hawk: {
+    credentials: config.adminHawk
+  }
+}, function(err, res, body) {
+  console.log(err);
+  console.log(body);
+});

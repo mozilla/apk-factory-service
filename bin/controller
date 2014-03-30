@@ -11,6 +11,7 @@ process.env.PROCESS_TYPE = 'apk-controller';
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 
 var express = require('express');
+var hawk = require('hawk');
 var raven = require('raven');
 var request = require('request');
 var toobusy = require('../lib/busy_middleware.js');
@@ -19,6 +20,7 @@ var argv = require('../lib/cli_common_argv');
 var config = require('../lib/config');
 config.init(argv);
 
+var admin = require('../lib/admin');
 var apkUpdates = require('../lib/apk_updates');
 var cliDevBuild = require('../lib/cli_dev_build');
 var frontController = require('../lib/front_controller');
@@ -160,7 +162,30 @@ config.withConfig(function(config) {
     });
   });
 
+  app.post('/admin', function(req, res) {
+    var port = config.hawkPublicControllerServerPort;
+    hawk.server.authenticate(req, function(id, cb) {
+      log.info('incoming Hawk request for ' + id);
+      cb(null, config.adminHawk);
+    }, {port: port}, function(err, credentials, artifacts) {
+      credentials = credentials || {};
+      if(err) {
+        log.error('Bad hawk credentials for id=' + credentials.id);
+        log.error(err);
+
+        log.debug('Failed Hawk artifacts; id=' + credentials.id + ' artifacts=',
+           artifacts);
+        log.info('Approximate Hawk local time in seconds: ' +
+                    hawk.utils.now() / 1000);
+        res.send('Access denied', 401);
+        return;
+      }
+      admin(req, res, config);
+    });
+  });
+
   process.stdout.write('listening on ', config.controller_server_port);
+
   app.listen(config.controller_server_port,
     config.bind_address,
     function() {
