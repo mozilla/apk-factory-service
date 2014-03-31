@@ -42,8 +42,8 @@ function wireUp(child, prefix) {
   });
 }
 
-var cChild = spawn('node', [controller]);
+var cChild = spawn('node-debug', ['--web-port=8888', '--debug-port=5858', '--debug-brk=false', controller]);
 wireUp(cChild, 'CONTROLLER:');
 
-var gChild = spawn('node', [generator]);
+var gChild = spawn('node-debug', ['--web-port=8889', '--debug-port=5859', '--debug-brk=false', generator]);
 wireUp(gChild, 'GENERATOR:');

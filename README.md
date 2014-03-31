@@ -55,6 +55,10 @@ configuration paramters and allowable values.
 Local development
 -----------------
 
+One time install of development only modules
+
+    npm install node-inspector tape
+
 You'll probably want to point your local generator to a local
 [APK Signer](https://github.com/mozilla/apk-signer).
 See `config/default.js` for where to set its URL.
@@ -72,6 +76,11 @@ and get a binary APK response. Try this:
     curl -v -H "Content-Type: application/json" -X POST -d '{ "installed":{"http://deltron3030.testmanifest.com/manifest.webapp":1394909578}}' https://localhost:8080/app_updates
 
 You can generate manifests at [testmanifest.com](http://testmanifest.com/).
+
+You can attach a debugger via two tabs in Chrome
+
+* [Controller Node Inspector](http://localhost:8888/debug?port=5858)
+* [Generator Node Inspector](http://localhost:8889/debug?port=5859)
 
 CLI
 ---

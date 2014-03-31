@@ -110,6 +110,16 @@ hawk = {
   id: 'apk-factory'
 }
 
+// Hawk authentication for Admin CLI
+adminHawk = {
+  key: 'foobar',
+  algorithm: 'sha256',
+  id: 'apk-factory-admin'
+}
+
+// Public port # for generator urls
+hawkPublicControllerServerPort = 8080;
+
 // Public port # for generator urls
 hawkPublicServerPort = 8081;
 

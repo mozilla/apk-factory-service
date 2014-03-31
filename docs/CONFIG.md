@@ -78,6 +78,20 @@ Hawk authentication nested config of `key`, `algorithm`, and `id`.
       id: 'apk-factory'
     }
 
+### adminHawk
+Hawk authentication nested config of `key`, `algorithm`, and `id`.
+**values must match** between the admin CLI and the controller
+
+    hawk = {
+      key: 'fizzbuzz',
+      algorithm: 'sha256',
+      id: 'apk-factory-admin'
+    }
+
+Make the apk-factory-admin key different than the apk-factory key.
+This config will be shared with admins like Dev / QA / Ops desktop
+machines.
+
 ### statsd
 
 Important metrics or events are sent to statsd.
@@ -140,6 +154,16 @@ URL to the APK Signer server without any paths and without a trailing
 slash. See https://github.com/mozilla/apk-signer
 
     signerUrl = 'https://apk-signer.allizom.org';
+
+### hawkPublicControllerServerPort
+
+Hawk's server authentication between the admin CLI and controller
+needs to know what port number is publically exposed, even
+if the deamon binds to a different one internally.
+
+Example: 443 in production.
+
+    hawkPublicControllerServerPort = 8080;
 
 ### hawkPublicServerPort
 
