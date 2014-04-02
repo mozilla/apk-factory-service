@@ -77,7 +77,11 @@ and get a binary APK response. Try this:
 
 You can generate manifests at [testmanifest.com](http://testmanifest.com/).
 
-You can attach a debugger via two tabs in Chrome
+You can attach a debugger via two tabs in Chrome, if you do this instead of `npm start`
+
+    node scripts/development-server.js debug
+
+And then load in Chrome:
 
 * [Controller Node Inspector](http://localhost:8888/debug?port=5858)
 * [Generator Node Inspector](http://localhost:8889/debug?port=5859)

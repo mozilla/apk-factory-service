@@ -1,3 +1,13 @@
+/*
+This script is either run via
+
+    npm start
+
+or
+
+    node scripts/development-server.js debug
+*/
+
 var path = require('path');
 var spawn = require('child_process').spawn;
 
@@ -42,8 +52,23 @@ function wireUp(child, prefix) {
   });
 }
 
-var cChild = spawn('node-debug', ['--web-port=8888', '--debug-port=5858', '--debug-brk=false', controller]);
+var debug = 'debug' === process.argv[2];
+
+var nodeDebugCmd = path.join(__dirname, '..', 'node_modules', '.bin', 'node-debug');
+
+var cChild;
+if (debug) {
+  cChild = spawn(nodeDebugCmd, ['--web-port=8888', '--debug-port=5858', '--debug-brk=false', controller]);
+} else {
+  cChild = spawn('node', [controller]);
+}
 wireUp(cChild, 'CONTROLLER:');
 
-var gChild = spawn('node-debug', ['--web-port=8889', '--debug-port=5859', '--debug-brk=false', generator]);
+var gChild;
+if (debug) {
+  gChild = spawn(nodeDebugCmd, ['--web-port=8889', '--debug-port=5859', '--debug-brk=false', generator]);
+} else {
+  gChild = spawn('node', [generator]);
+}
 wireUp(gChild, 'GENERATOR:');
+

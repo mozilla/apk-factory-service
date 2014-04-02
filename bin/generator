@@ -9,6 +9,8 @@ process.env.PROCESS_TYPE = 'apk-generator';
 // TODO Bug#973259
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 
+var fs = require('fs');
+
 var express = require('express');
 var hawk = require('hawk');
 
@@ -22,6 +24,9 @@ config.init(argv);
 var apkSystem = require('../lib/apk_system');
 var ApkGenerator = require('../lib/apk_generator').ApkGenerator;
 var metrics = require('../lib/metrics');
+
+var BLOB_TYPE = require('../lib/apk_generator').BLOB_TYPE;
+var S3_TYPE = require('../lib/apk_generator').S3_TYPE;
 
 config.withConfig(function(config) {
   var log = require('../lib/logging')(config);
@@ -69,7 +74,7 @@ config.withConfig(function(config) {
 
         if (! post.manifest.url) throw new Error('missing url');
         generator.generate(post.manifest, post.zip, post.loadDir,
-                           genCb(res, post.manifest.url, start, log));
+                           genCb(res, config, post.manifest.url, start, log));
       });
     } else if ('/system/signer' === req.path) {
       apkSystem.signer(req, res, log);
@@ -96,8 +101,9 @@ config.withConfig(function(config) {
               });
 });
 
-function genCb(res, manifesturl, start, log) {
-  return function (err, apkFileLocation) {
+function genCb(res, config, manifesturl, start, log) {
+  return function (err, apkFileLocation, cleanupFn) {
+    var locationType;
     res.set('Content-Type', 'application/json');
     if (err) {
       log.error(err.stack);
@@ -109,10 +115,34 @@ function genCb(res, manifesturl, start, log) {
     } else {
       log.info('Generation of APK complete [' + manifesturl + '] streaming back');
       metrics.buildingApkFinished(manifesturl, new Date() - start);
-      res.send({
+      var resBody = {
         status: "okay",
-        apkFileLocation: apkFileLocation
-      });
+        locationType: locationType,
+      };
+
+      // Be explicit to detect deployment bugs
+      if ('release' === config.environment) {
+        resBody.locationType = S3_TYPE;
+        resBody.apkFileLocation = apkFileLocation;
+        res.send(resBody);
+        cleanupFn();
+      } else {
+        fs.readFile(apkFileLocation, {encoding:'binary'}, function(err, data) {
+          if (err) {
+            log.error('Problem reading apk' + err.toString());
+            return res.send({
+              status: "error",
+              message: err
+            });
+          }
+          resBody.locationType = BLOB_TYPE;
+          resBody.blob = new Buffer(data, 'binary').toString('base64');
+          res.send(resBody);
+          // Must be called after we readFile for the apkLocation
+          cleanupFn();
+        });
+      }
+      
     }
   };
 }
