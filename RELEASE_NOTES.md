@@ -1,6 +1,7 @@
-# release-2014-04-02-00 (4ba21e1a40)
+# release-2014-04-02-01 (4ba21e1a40)
 * (db migration) Bug#976170 Build queue for horizontal scaling
 * (config) Bug#986551 Admin CLI
+* Bug#988644 Support debug APKs for review instances
 * Bug#988741 If we can't find an app, it isn't out of date.
 * (dev only) Support node debugger
 
