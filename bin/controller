@@ -53,19 +53,27 @@ config.withConfig(function(config) {
 
     metrics.generateApkRequest(manifestUrl);
 
-    frontController(manifestUrl, appType, config, function(err, s3res) {
+    frontController(manifestUrl, appType, config, function(err, s3res, isStream) {
       if (err) {
         return _genApkFailed(res, err);
       }
       res.type("application/vnd.android.package-archive");
       res.status(200);
-      s3res.on('data', function(chunk) {
-        res.write(chunk);
-      });
-      s3res.on('end', function() {
-        res.send();
-        metrics.generationApkFinished(new Date() - start);
-      });
+
+      isStream = isStream || false;
+
+      if (isStream) {
+        res.write(s3res);
+        metrics.generationApkFinished(new Date() - start);        
+      } else {
+        s3res.on('data', function(chunk) {
+          res.write(chunk);
+        });
+        s3res.on('end', function() {
+          res.send();
+          metrics.generationApkFinished(new Date() - start);
+        });
+      }
     });
   });
 
@@ -95,7 +103,7 @@ config.withConfig(function(config) {
   if (['development', 'review'].indexOf(config.environment) !== -1) {
     app.post('/cli_build', function(req, res) {
       var start = new Date();
-      cliDevBuild(req.body, config, function(err, s3res) {
+      cliDevBuild(req.body, config, function(err, s3resOrBlob, isBase64Stream) {
         var status = 'okay';
         var msg = '';
         var bApk = null;
@@ -104,24 +112,37 @@ config.withConfig(function(config) {
           msg = err;
           log.error(err);
         } else {
-          var buf = [];
+
+          isBase64Stream = isBase64Stream || false;
+
+
           res.type("application/vnd.android.package-archive");
           res.status(200);
-          s3res.on('data', function(chunk) {
-            buf.push(chunk);
-          });
-          s3res.on('end', function() {
-            bApk = Buffer.concat(buf).toString('base64');
 
+          if (isBase64Stream) {
             res.set('Content-Type', 'application/json');
             res.send(JSON.stringify({
               status: status,
-              apk: bApk,
+              apk: s3resOrBlob,
               message: msg
             }));
-
-            metrics.generationApkFinished(new Date() - start);
-          });
+            metrics.generationApkFinished(new Date() - start);        
+          } else {
+            var buf = [];
+            s3resOrBlob.on('data', function(chunk) {
+              buf.push(chunk);
+            });
+            s3resOrBlob.on('end', function() {
+              bApk = Buffer.concat(buf).toString('base64');
+              res.set('Content-Type', 'application/json');
+              res.send(JSON.stringify({
+                status: status,
+                apk: bApk,
+                message: msg
+              }));
+              metrics.generationApkFinished(new Date() - start);
+            });
+          }
         }
       });
     });

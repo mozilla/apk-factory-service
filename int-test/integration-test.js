@@ -72,7 +72,7 @@ config.withConfig(function(config) {
         fs.readFile(path.join('decoded', 'AndroidManifest.xml'), opt, this);
       },
       function checkApplicationZip(err/*, xml*/) {
-        test.notOk(err, 'We read AndroidManifest.xml');
+        test.notOk(err, 'We read AndroidManifest.xml ' + err);
         // xml.indexOf('android:versionName="' + manifest.version) !== -1
         if ( !! manifest.package_path) {
           var that = this;
@@ -89,7 +89,7 @@ config.withConfig(function(config) {
         fs.readFile('decoded/res/raw/manifest.json', opt, this);
       },
       function compareManifest(err, raw) {
-        test.notOk(err, 'we could read the manifest');
+        test.notOk(err, 'we could read the manifest ' + err);
         var reason = 'res/raw/manifest.json matches http version';
         var m = JSON.parse(raw);
 
@@ -116,13 +116,13 @@ config.withConfig(function(config) {
         request(desreUrl, this);
       },
       function loadDesre(err, res, body) {
-        test.notOk(err, 'requested fdesre url');
+        test.notOk(err, 'requested fdesre url ' + err);
         test.equal(res.statusCode, 200);
         desreManifest = JSON.parse(new Buffer(body).toString('utf8'));
         request(deltronUrl, this);
       },
       function loadDeltron3030(err, res, body) {
-        test.notOk(err, 'requested deltron3030 manifest');
+        test.notOk(err, 'requested deltron3030 manifest ' + err);
         test.equal(res.statusCode, 200);
         deltronManifest = JSON.parse(new Buffer(body).toString('utf8'));
         test.end();
@@ -158,15 +158,15 @@ config.withConfig(function(config) {
         exec("file t", this);
       },
       function afterCurl1File(err, stdout, stderr) {
-        test.notOk(err, 'file t check');
+        test.notOk(err, 'file t check ' + err);
         testFile(test, 't', stdout, stderr, this);
       },
       function afterCurl1FileTest(err) {
-        test.notOk(err, 'file t output checked');
+        test.notOk(err, 'file t output checked ' + err);
         testApk(test, desreManifest, this);
       },
       function afterCurl1ApkTool(err) {
-        test.notOk(err, 'apktool 1 check');
+        test.notOk(err, 'apktool 1 check ' + err);
         test.end();
       }
     );
@@ -187,11 +187,11 @@ config.withConfig(function(config) {
         testFile(test, 't', stdout, stderr, this);
       },
       function afterCurl2FileTest(err) {
-        test.notOk(err, 'file t output checked');
+        test.notOk(err, 'file t output checked ' + err);
         testApk(test, deltronManifest, this);
       },
       function(err) {
-        test.notOk(err, 'apktool 2 check');
+        test.notOk(err, 'apktool 2 check ' + err);
         test.end();
       });
   });
@@ -246,7 +246,7 @@ config.withConfig(function(config) {
         alwaysUpdating(this);
       },
       function serverCallback(err, aServer) {
-        test.notOk(err, 'always updating server started');
+        test.notOk(err, 'always updating server started ' + err);
         server = aServer;
         serverPort = server.address().port;
         alwaysUpdatingManifest = 'http://localhost:' + serverPort + '/manifest.webapp';
@@ -255,7 +255,7 @@ config.withConfig(function(config) {
         request(alwaysUpdatingUrl, this);
       },
       function afterGet1(err, res/*, body*/) {
-        test.notOk(err, 'get request has no eror');
+        test.notOk(err, 'get request has no error ' + err);
         test.equal(200, res.statusCode, 'get request was 200');
         var that = this;
         conn = mysql.createConnection(config.mysql);
@@ -279,15 +279,13 @@ config.withConfig(function(config) {
         version = row.version;
         libraryVersion = row.library_version;
         var that = this;
-        console.log('Go to sleep');
         // We have a 1 second cache
         setTimeout(function() {
-          console.log('and sending request...');
           request(alwaysUpdatingUrl, that);
         }, 2000);
       },
       function afterCurl2(err, res/*, body*/) {
-        test.notOk(err, 'no error from request');
+        test.notOk(err, 'no error from request ' + err);
         test.equal(200, res.statusCode, 'request is 200');
         var that = this;
         conn = mysql.createConnection(config.mysql);
@@ -305,7 +303,7 @@ config.withConfig(function(config) {
         }
       },
       function afterDb2(err, row) {
-        test.notOk(err);
+        test.notOk(err, 'no error from db SELECT ' + err);
         test.equal(id, row.id, 'ID is stable across updates');
         test.ok(version < row.version, 'Our version number increments ' + version + ' ' + row.version);
         test.equal(libraryVersion, row.library_version, 'Our APK Library version is stable');
@@ -327,7 +325,7 @@ config.withConfig(function(config) {
       },
       function afterDbVersionsCheck(err, rows) {
         var that = this;
-        test.notOk(err);
+        test.notOk(err, 'No error after DB Vesion Check ' + err);
         test.ok(rows.length >= 3, "We've got atleast 3 manifest urls in there now...");
         var data = {
           installed: {
@@ -352,7 +350,7 @@ config.withConfig(function(config) {
         }, 2000);// Wait out INT_TESTING caching
       },
       function afterAppUpdateRequest(err, res, body) {
-        test.notOk(err, 'No error for request to app_updates');
+        test.notOk(err, 'No error for request to app_updates ' + err);
         var outdated = JSON.parse(body).outdated;
         test.equal(1, outdated.length, 'only 1 app is out of date got ' + outdated.length);
         test.equal(outdated[0], alwaysUpdatingManifest,
