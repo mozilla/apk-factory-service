@@ -17,12 +17,12 @@ function withConn(config, cb) {
   console.log('regressionDBConfig', regressionDBConfig);
   
   var conn = mysql.createConnection(regressionDBConfig);
-    try {
-      conn.connect();
-      cb(null, conn);
-    } catch (e) {
-      cb(e);
-    }
+  try {
+    conn.connect();
+    cb(null, conn);
+  } catch (e) {
+    cb(e);
+  }
 }
 
 function handleConnErr(errCb, cb) {
@@ -38,12 +38,12 @@ function handleConnErr(errCb, cb) {
 
 function querySendRows(conn, cb) {
   return function(err, rows) {
-      conn.end();
-      if (err) {
-        return cb(err);
-      }
-      return cb(null, rows);
-  }
+    conn.end();
+    if (err) {
+      return cb(err);
+    }
+    return cb(null, rows);
+  };
 }
 
 exports.envs = function(config, cb) {

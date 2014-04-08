@@ -7,7 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /*
-Given an environment, test all OWA
+  Given an environment, test all OWA
 */
 
 var fs = require('fs');
@@ -16,6 +16,7 @@ var vm = require('vm');
 
 var _ = require('underscore');
 var optimist = require('optimist');
+var request = require('request');
 var Step = require('step');
 
 var regressionDb = require('./lib/regression_db');
@@ -53,23 +54,72 @@ Step(
   },
   function (err, envs, owas) {
     if (err) throw err;
+    var that = this;
 
-    var envId = _.find(envs, function(env) {
-      console.log('Searching ', env, ' for ', argv.endpoint);
-      return argv.endpoint === env.endpoint_url; });
+    var curEnv = _.find(envs, function(env) {
+      return argv.endpoint === env.endpoint_url;
+    });
 
 
-    if (! envId) throw new Error('Unknown environment ' + argv.endpoint + ' choose from ' +
-                                 _.reduce(envs, function(memo, env) {
-                                   if (memo === null) {
-                                     return env.endpoint_url;
-                                   } else {
-                                     return memo + ', ' + env.endpoint_url;
-                                   }
-                                 }, null));
+    if (! curEnv) throw new Error('Unknown environment ' + argv.endpoint + ' choose from ' +
+                                  _.reduce(envs, function(memo, env) {
+                                    if (memo === null) {
+                                      return env.endpoint_url;
+                                    } else {
+                                      return memo + ', ' + env.endpoint_url;
+                                    }
+                                  }, null));    
 
-    console.log('envId =', envId);
-    console.log('envs', envs);
-    console.log('owas', owas);
+    var group = that.group();
+    testApk(argv, owas, curEnv, group());
+  },
+  function(err, results) {
+    console.log('Finished all', err, results);
   }
 );
+
+function makeUrl(baseUrl, manifestUrl) {
+  return baseUrl + '/application.apk?manifestUrl=' +
+    encodeURIComponent(manifestUrl);
+}
+
+function testApk(argv, owas, curEnv, cb) {
+  var reqOpts = {
+    strictSSL: false,
+    encoding: null
+  };
+  owas.forEach(function(owa) {
+    var apkUrl = makeUrl(argv.endpoint, owa.manifest_url);
+    var result = {
+      envId: curEnv.id,
+      owaId: owa.id,
+      start: new Date().getTime(),
+      validJar: false
+    };
+
+    Step(
+      function() {
+        console.log('Requesting ', apkUrl);
+        request(apkUrl, reqOpts, this);
+        // TODO result.hosted
+
+      },
+      function afterRequest(err, res, body) {
+        result.finish = new Date().getTime();
+        console.log('after request', err, body.length);
+        // TODO error handling during these regression runs
+        if (err) throw err;
+        result.statusCode = res.statusCode;
+        if (200 !== res.statusCode) throw new Error('Wrong status code, expected 200 got ' +
+
+                                                    res.statusCode);
+
+        if (!! body && body.length) {
+          result.apkSize = body.length;
+        }
+
+        cb(null, result);
+      }
+    );
+  });
+}
