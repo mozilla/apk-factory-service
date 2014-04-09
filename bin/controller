@@ -30,6 +30,13 @@ var s3Check = require('../lib/s3_check');
 
 config.withConfig(function(config) {
   var log = require('../lib/logging')(config);
+  process.on('uncaughtException', function (err) {
+    if (err.stack) {
+      log.error('Caught exception: ' + err.stack);
+    } else {
+      log.error('Caught exception: ' + err.toString());
+    }
+  });
   var app = express();
 
   // Send 5xx if server is overloaded
@@ -53,28 +60,32 @@ config.withConfig(function(config) {
 
     metrics.generateApkRequest(manifestUrl);
 
-    frontController(manifestUrl, appType, config, function(err, s3res, isStream) {
-      if (err) {
-        return _genApkFailed(res, err);
-      }
-      res.type("application/vnd.android.package-archive");
-      res.status(200);
+    try {
+      frontController(manifestUrl, appType, config, function(err, s3res, isStream) {
+        if (err) {
+          return _genApkFailed(res, err);
+        }
+        res.type("application/vnd.android.package-archive");
+        res.status(200);
 
-      isStream = isStream || false;
+        isStream = isStream || false;
 
-      if (isStream) {
-        res.write(s3res);
-        metrics.generationApkFinished(new Date() - start);        
-      } else {
-        s3res.on('data', function(chunk) {
-          res.write(chunk);
-        });
-        s3res.on('end', function() {
-          res.send();
-          metrics.generationApkFinished(new Date() - start);
-        });
-      }
-    });
+        if (isStream) {
+          res.write(s3res);
+          metrics.generationApkFinished(new Date() - start);        
+        } else {
+          s3res.on('data', function(chunk) {
+            res.write(chunk);
+          });
+          s3res.on('end', function() {
+            res.send();
+            metrics.generationApkFinished(new Date() - start);
+          });
+        }
+      });
+    } catch (e) {
+      _reportCatch(res, manifestUrl, e);
+    }
   });
 
   function _genApkFailed(res, err) {
@@ -84,20 +95,35 @@ config.withConfig(function(config) {
     metrics.generationApkFailed();
   }
 
+  function _reportCatch(res, url, e) {
+      if (e.stack) {
+        log.error(e.stack + ' during ' + url);
+      } else {
+        log.error(e.toString() + ' during ' + url);
+      }
+      res.type("text/plain");
+      res.send(500, 'Unknown Server Error');
+      metrics.generationApkFailed();
+  }
+
   app.post('/app_updates', function(req, res) {
     var start = new Date();
     metrics.appUpdatesRequest();
-    apkUpdates(req.body, config, function(err, outdated) {
-      // Partial failures are okay (?)
-      if (err) {
-        metrics.appUpdatesFailed();
-      }
-      res.set('Content-Type', 'application/json');
-      res.send(JSON.stringify({
-        outdated: outdated
-      }));
-      metrics.appUpdatesFinished(new Date() - start);
-    });
+    try {
+      apkUpdates(req.body, config, function(err, outdated) {
+        // Partial failures are okay (?)
+        if (err) {
+          metrics.appUpdatesFailed();
+        }
+        res.set('Content-Type', 'application/json');
+        res.send(JSON.stringify({
+          outdated: outdated
+        }));
+        metrics.appUpdatesFinished(new Date() - start);
+      });
+    } catch (e) {
+      _reportCatch(res, '/app_updates', e);
+    }
   });
 
   if (['development', 'review'].indexOf(config.environment) !== -1) {

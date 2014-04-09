@@ -30,6 +30,13 @@ var S3_TYPE = require('../lib/apk_generator').S3_TYPE;
 
 config.withConfig(function(config) {
   var log = require('../lib/logging')(config);
+  process.on('uncaughtException', function (err) {
+    if (err.stack) {
+      log.error('Caught exception: ' + err.stack);
+    } else {
+      log.error('Caught exception: ' + err.toString());
+    }
+  });
   var generator = new ApkGenerator(config.buildDir,
                                    config.keysDir,
                                    config.force,
@@ -45,7 +52,7 @@ config.withConfig(function(config) {
   function withHawk(req, res, next, onAuthZ) {
     var port = config.hawkPublicServerPort;
     hawk.server.authenticate(req, function(id, cb) {
-      log.info('incoming Hawk request for ' + id);
+      log.info('incoming Hawk request for ' + id + ' using port=' + port);
       cb(null, config.hawk);
     }, {port: port}, function(err, credentials, artifacts) {
       credentials = credentials || {};
@@ -73,8 +80,12 @@ config.withConfig(function(config) {
         var post = req.body;
 
         if (! post.manifest.url) throw new Error('missing url');
-        generator.generate(post.manifest, post.zip, post.loadDir,
-                           genCb(res, config, post.manifest.url, start, log));
+        try {
+          generator.generate(post.manifest, post.zip, post.loadDir,
+                             genCb(res, config, post.manifest.url, start, log));
+        } catch (e) {
+          _reportCatch(res, post.manifest.url, e);
+        }
       });
     } else if ('/system/signer' === req.path) {
       apkSystem.signer(req, res, log);
@@ -90,6 +101,17 @@ config.withConfig(function(config) {
       next();
     }
   });
+
+  function _reportCatch(res, url, e) {
+      if (e.stack) {
+        log.error(e.stack + ' during ' + url);
+      } else {
+        log.error(e.toString() + ' during ' + url);
+      }
+      res.type("text/plain");
+      res.send(500, 'Unknown Server Error');
+      metrics.buildingApkFailed(manifesturl);
+  }
 
   process.stdout.write('listening on ', config.generator_server_port);
   app.listen(config.generator_server_port,
