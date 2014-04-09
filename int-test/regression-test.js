@@ -108,7 +108,7 @@ function testApks(argv, owas, curEnv, cb) {
 
         testApk(apkUrl, owa, result, group());
       });
-    }, function(err) {
+    }, function() {
       cb(null);
     }
   );
@@ -120,7 +120,7 @@ function testApks(argv, owas, curEnv, cb) {
       function recordManifest(err, res, body) {
         if (err) {
           result.err = 'Error requesting mini-manifest ' + err.toString();
-          result.keepTesting = false
+          result.keepTesting = false;
         } else {
           try {
             var miniMani = JSON.parse(body);
@@ -129,7 +129,7 @@ function testApks(argv, owas, curEnv, cb) {
             }
           } catch(e) {
             result.err = 'Error parsing mini-manifest ' + e.toString() + ' original=' + body;
-            result.keepTesting = false
+            result.keepTesting = false;
           }
         }
         this(null);
@@ -147,7 +147,7 @@ function testApks(argv, owas, curEnv, cb) {
           result.finish = new Date();
           if (err) {
             result.err = 'Error requesting apk ' + err.toString();
-            result.keepTesting = false
+            result.keepTesting = false;
           }
           if (res && res.statusCode) {
             result.statusCode = res.statusCode;
