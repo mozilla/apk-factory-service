@@ -32,6 +32,7 @@ CREATE TABLE results (
   valid_jar BOOLEAN,
   apk_size INT,
   status_code SMALLINT,
+  error VARCHAR(5000),
   PRIMARY KEY(id),
   FOREIGN KEY(env_id) REFERENCES env(id),
   FOREIGN KEY(owa_id) REFERENCES owa(id)

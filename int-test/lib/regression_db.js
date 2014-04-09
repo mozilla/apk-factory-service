@@ -59,3 +59,39 @@ exports.owas = function(config, cb) {
     conn.query('SELECT id, name, manifest_url FROM owa', [], querySendRows(conn, cb));
   }));
 };
+
+exports.saveResult = function(config, result, cb) {
+  withConn(config, handleConnErr(cb, function(conn) {
+    conn.query('INSERT INTO results ' +
+               '(env_id, owa_id, start_dt, finish_dt, hosted, ' +
+               'valid_jar, apk_size, status_code, error) ' +
+               'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+               [
+                 result.envId,
+                 result.owaId,
+                 result.start,
+                 result.finish,
+                 result.hosted,
+                 result.validJar,
+                 result.apkSize,
+                 result.statusCode,
+                 result.err
+               ], function(err) {
+                 conn.end();
+                 cb(err);                 
+               });  
+  }));
+};
+
+exports.bulkAddOWA = function(config, owas, cb) {
+  console.log('INSERTING ', owas);
+    withConn(config, handleConnErr(cb, function(conn) {
+      conn.query('INSERT INTO owa ' +
+               '(id, name, manifest_url) VALUES ?',
+               [owas], function(err) {
+                 console.log('DB says', err);
+                 conn.end();
+                 cb(err);
+               });  
+  }));
+};

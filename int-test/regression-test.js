@@ -54,12 +54,11 @@ Step(
   },
   function (err, envs, owas) {
     if (err) throw err;
-    var that = this;
+    console.log('Potentially testing ' + owas.length + ' apps');
 
     var curEnv = _.find(envs, function(env) {
       return argv.endpoint === env.endpoint_url;
     });
-
 
     if (! curEnv) throw new Error('Unknown environment ' + argv.endpoint + ' choose from ' +
                                   _.reduce(envs, function(memo, env) {
@@ -68,13 +67,14 @@ Step(
                                     } else {
                                       return memo + ', ' + env.endpoint_url;
                                     }
-                                  }, null));    
+                                  }, null));
 
-    var group = that.group();
-    testApk(argv, owas, curEnv, group());
+    testApks(argv, owas, curEnv, this);
   },
-  function(err, results) {
-    console.log('Finished all', err, results);
+  function(err) {
+    if (err && err.stack) { console.log(err.stack); }
+    console.log('Finished all', err);
+// TODO this should loop, re-read db... etc
   }
 );
 
@@ -83,43 +83,86 @@ function makeUrl(baseUrl, manifestUrl) {
     encodeURIComponent(manifestUrl);
 }
 
-function testApk(argv, owas, curEnv, cb) {
+function testApks(argv, owas, curEnv, cb) {
   var reqOpts = {
     strictSSL: false,
     encoding: null
   };
-  owas.forEach(function(owa) {
-    var apkUrl = makeUrl(argv.endpoint, owa.manifest_url);
-    var result = {
-      envId: curEnv.id,
-      owaId: owa.id,
-      start: new Date().getTime(),
-      validJar: false
-    };
 
+  Step(
+    function() {
+
+      var group = this.group();
+      owas.slice(0, 5).forEach(function(owa) {
+        var apkUrl = makeUrl(argv.endpoint, owa.manifest_url);
+        var result = {
+          envId: curEnv.id,
+          owaId: owa.id,
+          start: new Date(),
+          hosted: true,
+          validJar: false,
+          statusCode: 0,
+          apkSize: 0,
+          keepTesting: true // State of this test run
+        };
+
+        testApk(apkUrl, owa, result, group());
+      });
+    }, function(err) {
+      cb(null);
+    }
+  );
+  function testApk(apkUrl, owa, result, cb) {
     Step(
+      function getMiniManifest() {
+        request(owa.manifest_url, {encoding: 'utf8'}, this);
+      },
+      function recordManifest(err, res, body) {
+        if (err) {
+          result.err = 'Error requesting mini-manifest ' + err.toString();
+          result.keepTesting = false
+        } else {
+          try {
+            var miniMani = JSON.parse(body);
+            if (miniMani.package_path && miniMani.package_path.length > 0) {
+              result.hosted = false;
+            }
+          } catch(e) {
+            result.err = 'Error parsing mini-manifest ' + e.toString() + ' original=' + body;
+            result.keepTesting = false
+          }
+        }
+        this(null);
+      },
       function() {
-        console.log('Requesting ', apkUrl);
-        request(apkUrl, reqOpts, this);
-        // TODO result.hosted
-
+        if (result.keepTesting) {
+          console.log('Requesting ', apkUrl);
+          request(apkUrl, reqOpts, this);
+        } else {
+          this(null);
+        }
       },
       function afterRequest(err, res, body) {
-        result.finish = new Date().getTime();
-        console.log('after request', err, body.length);
-        // TODO error handling during these regression runs
-        if (err) throw err;
-        result.statusCode = res.statusCode;
-        if (200 !== res.statusCode) throw new Error('Wrong status code, expected 200 got ' +
+        if (result.keepTesting) {
+          result.finish = new Date();
+          if (err) {
+            result.err = 'Error requesting apk ' + err.toString();
+            result.keepTesting = false
+          }
+          if (res && res.statusCode) {
+            result.statusCode = res.statusCode;
+            if (200 !== res.statusCode) result.keepTesting = false;
+          }      
 
-                                                    res.statusCode);
-
-        if (!! body && body.length) {
-          result.apkSize = body.length;
+          if (!! body && body.length) {
+            result.apkSize = body.length;
+          }
+        } else {
+          this(null);
         }
 
-        cb(null, result);
+        regressionDb.saveResult(config, result, cb);
       }
     );
-  });
+  }
 }
