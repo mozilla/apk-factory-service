@@ -23,6 +23,7 @@ config.init(argv);
 
 var apkSystem = require('../lib/apk_system');
 var ApkGenerator = require('../lib/apk_generator').ApkGenerator;
+var logError = require('../lib/log_error');
 var metrics = require('../lib/metrics');
 
 var BLOB_TYPE = require('../lib/apk_generator').BLOB_TYPE;
@@ -31,11 +32,7 @@ var S3_TYPE = require('../lib/apk_generator').S3_TYPE;
 config.withConfig(function(config) {
   var log = require('../lib/logging')(config);
   process.on('uncaughtException', function (err) {
-    if (err.stack) {
-      log.error('Caught exception: ' + err.stack);
-    } else {
-      log.error('Caught exception: ' + err.toString());
-    }
+    logError(log, 'Generator Uncaught exception:', err);
   });
   var generator = new ApkGenerator(config.buildDir,
                                    config.keysDir,
@@ -57,8 +54,7 @@ config.withConfig(function(config) {
     }, {port: port}, function(err, credentials, artifacts) {
       credentials = credentials || {};
       if(err) {
-        log.error('Bad hawk credentials for id=' + credentials.id);
-        log.error(err);
+        logError(log, 'Bad hawk credentials for id=' + credentials.id, err);
 
         log.debug('Failed Hawk artifacts; id=' + credentials.id + ' artifacts=',
            artifacts);
@@ -103,11 +99,7 @@ config.withConfig(function(config) {
   });
 
   function _reportCatch(res, url, e) {
-      if (e.stack) {
-        log.error(e.stack + ' during ' + url);
-      } else {
-        log.error(e.toString() + ' during ' + url);
-      }
+      logError(log, 'Generator exception during ' + url, e);
       res.type("text/plain");
       res.send(500, 'Unknown Server Error');
       metrics.buildingApkFailed(url);
@@ -128,7 +120,7 @@ function genCb(res, config, manifesturl, start, log) {
     var locationType;
     res.set('Content-Type', 'application/json');
     if (err) {
-      log.error(err.stack);
+      logError(log, 'generate failed', err);
       metrics.buildingApkFailed(manifesturl);
       res.send({
         status: "error",
@@ -151,7 +143,7 @@ function genCb(res, config, manifesturl, start, log) {
       } else {
         fs.readFile(apkFileLocation, {encoding:'binary'}, function(err, data) {
           if (err) {
-            log.error('Problem reading apk' + err.toString());
+            logError(log, 'Problem reading apk from ' + apkFileLocation, err);
             return res.send({
               status: "error",
               message: err

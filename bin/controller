@@ -24,6 +24,7 @@ var admin = require('../lib/admin');
 var apkUpdates = require('../lib/apk_updates');
 var cliDevBuild = require('../lib/cli_dev_build');
 var frontController = require('../lib/front_controller');
+var logError = require('../lib/log_error');
 var metrics = require('../lib/metrics');
 var s3Check = require('../lib/s3_check');
 
@@ -31,11 +32,7 @@ var s3Check = require('../lib/s3_check');
 config.withConfig(function(config) {
   var log = require('../lib/logging')(config);
   process.on('uncaughtException', function (err) {
-    if (err.stack) {
-      log.error('Caught exception: ' + err.stack);
-    } else {
-      log.error('Caught exception: ' + err.toString());
-    }
+    logError(log, 'Controller Uncaught exception', err);
   });
   var app = express();
 
@@ -89,18 +86,14 @@ config.withConfig(function(config) {
   });
 
   function _genApkFailed(res, err) {
-    log.error(err);
+    logError(log, 'gen Apk Failed', err);
     res.type("text/plain");
     res.send(400, err);
     metrics.generationApkFailed();
   }
 
   function _reportCatch(res, url, e) {
-      if (e.stack) {
-        log.error(e.stack + ' during ' + url);
-      } else {
-        log.error(e.toString() + ' during ' + url);
-      }
+      logError(log, 'Controller Exception during ' + url, e);
       res.type("text/plain");
       res.send(500, 'Unknown Server Error');
       metrics.generationApkFailed();
@@ -136,7 +129,7 @@ config.withConfig(function(config) {
         if (err) {
           status = 'error';
           msg = err;
-          log.error(err);
+          logError(log, 'cliDevBuild failed', err);
         } else {
 
           isBase64Stream = isBase64Stream || false;
@@ -217,9 +210,7 @@ config.withConfig(function(config) {
     }, {port: port}, function(err, credentials, artifacts) {
       credentials = credentials || {};
       if(err) {
-        log.error('Bad hawk credentials for id=' + credentials.id);
-        log.error(err);
-
+        logError(log, 'Bad hawk credentials for id=' + credentials.id, err);
         log.debug('Failed Hawk artifacts; id=' + credentials.id + ' artifacts=',
            artifacts);
         log.info('Approximate Hawk local time in seconds: ' +
