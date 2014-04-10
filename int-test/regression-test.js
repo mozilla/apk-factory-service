@@ -93,12 +93,11 @@ function testApks(argv, owas, curEnv, cb) {
     function() {
 
       var group = this.group();
-      owas.slice(0, 5).forEach(function(owa) {
+      owas.slice(100, 150).forEach(function(owa) {
         var apkUrl = makeUrl(argv.endpoint, owa.manifest_url);
         var result = {
           envId: curEnv.id,
           owaId: owa.id,
-          start: new Date(),
           hosted: true,
           validJar: false,
           statusCode: 0,
@@ -115,6 +114,7 @@ function testApks(argv, owas, curEnv, cb) {
   function testApk(apkUrl, owa, result, cb) {
     Step(
       function getMiniManifest() {
+        result.start = new Date();
         request(owa.manifest_url, {encoding: 'utf8'}, this);
       },
       function recordManifest(err, res, body) {
