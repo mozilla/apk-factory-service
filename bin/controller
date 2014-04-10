@@ -63,7 +63,7 @@ config.withConfig(function(config) {
       isStream = isStream || false;
 
       if (isStream) {
-        res.write(s3res);
+        res.send(s3res);
         metrics.generationApkFinished(new Date() - start);        
       } else {
         s3res.on('data', function(chunk) {
