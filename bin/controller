@@ -104,7 +104,7 @@ config.withConfig(function(config) {
       res.type("text/plain");
       res.send(500, 'Unknown Server Error');
       metrics.generationApkFailed();
-  }
+    }
 
   app.post('/app_updates', function(req, res) {
     var start = new Date();

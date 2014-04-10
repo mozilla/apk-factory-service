@@ -110,8 +110,8 @@ config.withConfig(function(config) {
       }
       res.type("text/plain");
       res.send(500, 'Unknown Server Error');
-      metrics.buildingApkFailed(manifesturl);
-  }
+      metrics.buildingApkFailed(url);
+    }
 
   process.stdout.write('listening on ', config.generator_server_port);
   app.listen(config.generator_server_port,
