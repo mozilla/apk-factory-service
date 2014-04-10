@@ -159,7 +159,7 @@ function genCb(res, config, manifesturl, start, log) {
           }
           resBody.locationType = BLOB_TYPE;
           resBody.blob = new Buffer(data, 'binary').toString('base64');
-          res.send(resBody);
+          res.send(JSON.stringify(resBody));
           // Must be called after we readFile for the apkLocation
           cleanupFn();
         });
