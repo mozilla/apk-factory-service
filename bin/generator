@@ -15,7 +15,6 @@ var express = require('express');
 var hawk = require('hawk');
 
 var raven = require('raven');
-var toobusy = require('../lib/busy_middleware.js');
 
 var argv = require('../lib/cli_common_argv');
 var config = require('../lib/config');
@@ -40,9 +39,6 @@ config.withConfig(function(config) {
                                    config.debug);
 
   var app = express();
-
-  // Send 5xx if server is overloaded
-  app.use(toobusy);
 
   app.use(express.bodyParser());
 
