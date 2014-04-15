@@ -14,8 +14,6 @@ function withConn(config, cb) {
                                   {database: 'apk_factory_regression'});
   }
 
-  console.log('regressionDBConfig', regressionDBConfig);
-  
   var conn = mysql.createConnection(regressionDBConfig);
   try {
     conn.connect();
@@ -56,7 +54,7 @@ exports.envs = function(config, cb) {
 exports.owas = function(config, cb) {
   withConn(config, handleConnErr(cb, function(conn) {
     if (! conn) throw new Error('no connection');
-    conn.query('SELECT id, name, manifest_url FROM owa', [], querySendRows(conn, cb));
+    conn.query('SELECT id, name, manifest_url FROM owa ORDER BY RAND()', [], querySendRows(conn, cb));
   }));
 };
 
@@ -64,8 +62,8 @@ exports.saveResult = function(config, result, cb) {
   withConn(config, handleConnErr(cb, function(conn) {
     conn.query('INSERT INTO results ' +
                '(env_id, owa_id, start_dt, finish_dt, hosted, ' +
-               'valid_jar, apk_size, status_code, error) ' +
-               'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+               'valid_jar, apk_size, version, outdated, status_code, error) ' +
+               'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                [
                  result.envId,
                  result.owaId,
@@ -74,6 +72,8 @@ exports.saveResult = function(config, result, cb) {
                  result.hosted,
                  result.validJar,
                  result.apkSize,
+                 result.apkVersion,
+                 result.outdated,
                  result.statusCode,
                  result.err
                ], function(err) {
@@ -84,12 +84,10 @@ exports.saveResult = function(config, result, cb) {
 };
 
 exports.bulkAddOWA = function(config, owas, cb) {
-  console.log('INSERTING ', owas);
     withConn(config, handleConnErr(cb, function(conn) {
       conn.query('INSERT INTO owa ' +
                '(id, name, manifest_url) VALUES ?',
                [owas], function(err) {
-                 console.log('DB says', err);
                  conn.end();
                  cb(err);
                });  

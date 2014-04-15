@@ -31,6 +31,8 @@ CREATE TABLE results (
   hosted BOOLEAN,
   valid_jar BOOLEAN,
   apk_size INT,
+  version INT,
+  outdated BOOLEAN,
   status_code SMALLINT,
   error VARCHAR(5000),
   PRIMARY KEY(id),
