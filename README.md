@@ -18,7 +18,7 @@ Dependencies
 
 APT-based Linux:
 
-    sudo apt-get install graphicsmagick mysql-server
+    sudo apt-get install graphicsmagick  mysql-server
     # Android SDK also requires:
     sudo apt-get install openjdk-7-jdk ant ia32-libs unzip
 
@@ -31,10 +31,14 @@ Installation
 
     # Clone apk-factory-library
     cd lib/ext && git clone https://github.com/mozilla/apk-factory-library.git
+    cd ../..
+    npm rebuild
 
     # Create the database and an *apk* user with privileges on it.
     mysql.server start
     mysql -u root < docs/db/schema_up_000.sql
+    mysql -u root < docs/db/schema_up_001.sql
+    mysql -u root < docs/db/schema_up_002.sql
     mysql -u root -e "CREATE USER 'apk'@'localhost' IDENTIFIED BY 'password';"
     mysql -u root -e "GRANT ALL PRIVILEGES ON apk_factory.* TO 'apk'@'localhost';"
 
@@ -44,7 +48,6 @@ for common setup instructions.
 You'll need to expose the SDK path with something like this:
 
     export ANDROID_HOME=~/Downloads/adt-bundle-mac/sdk/
-    export ANDROID_SDK_HOME=$ANDROID_HOME
 
 You need to have API 19 (or maybe higher?). Check for
 `adt-bundle-mac/sdk/platforms/android-19/`.
