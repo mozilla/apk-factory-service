@@ -16,7 +16,7 @@
 var LIVE = false;
 
 // number of highest .json file
-var MAX_FILES = 143;
+var MAX_FILES = 146;
 
 var nextUrl = 'https://marketplace.cdn.mozilla.net/api/v1/fireplace/search/featured/?cache=1&cat=&lang=en-US&region=us&vary=0';
 
@@ -38,17 +38,17 @@ var sha1 = require('../../lib/sha1');
 var argv = optimist
   .usage('Usage: $0 [OPTIONS]')
 
-  .option('config', {
-    alias: 'c',
-    "default": path.resolve(__dirname, '..', 'config', 'default.js')
-  })
+.option('config', {
+  alias: 'c',
+  "default": path.resolve(__dirname, '..', 'config', 'default.js')
+})
 
-  .check(function(args) {
-    // Admin Config
-    if (false === fs.existsSync(args.config)) {
-      throw new Error('Regression test run config file required, unable to use ' + args.config);
-    }
-  })
+.check(function(args) {
+  // Admin Config
+  if (false === fs.existsSync(args.config)) {
+    throw new Error('Regression test run config file required, unable to use ' + args.config);
+  }
+})
   .argv;
 
 var config = vm.createContext();
@@ -57,11 +57,14 @@ vm.runInContext(fs.readFileSync(argv.config), config, argv.config);
 
 function doNext(nextUrl) {
   if (LIVE) {
-    request(nextUrl, {encoding: 'utf8'}, processResponse);
+    request(nextUrl, {
+      encoding: 'utf8'
+    }, processResponse);
   } else {
-    fs.readFile(path.resolve(__dirname, '..', 'data', 'marketplace-' + nextUrl + '.json'),
-                {encoding: 'utf8'},
-                processJSONFile);
+    fs.readFile(path.resolve(__dirname, '..', 'data', 'marketplace-' + nextUrl + '.json'), {
+        encoding: 'utf8'
+      },
+      processJSONFile);
   }
 }
 
@@ -84,7 +87,7 @@ function processJSONFile(err, data) {
     throw err;
   }
   var results = JSON.parse(data);
-  if (MAX_FILES >= nextUrl) {
+  if (MAX_FILES > nextUrl) {
     nextUrl++;
   } else {
     nextUrl = null;

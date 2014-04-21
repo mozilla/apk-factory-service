@@ -15,7 +15,7 @@
 
 */
 
-var nextUrl = 'https://marketplace.cdn.mozilla.net/api/v1/fireplace/search/featured/?cache=1&cat=&lang=en-US&region=us&vary=0';
+var nextUrl = 'https://marketplace.cdn.mozilla.net/api/v1/fireplace/search/featured/?cache=1&cat=&lang=en-US&region=us&vary=0';
 
 var fs = require('fs');
 var path = require('path');
@@ -24,12 +24,17 @@ var request = require('request');
 var Step = require('step');
 
 function doNext(nextUrl) {
-  request(nextUrl, {encoding: 'utf8'}, processResponse);
+  request(nextUrl, {
+    encoding: 'utf8'
+  }, processResponse);
 }
 
 var counter = 0;
+
 function processResponse(err, res, body) {
-  fs.writeFileSync('marketplace-' + counter + '.json', body, {encoding: 'utf8'});
+  fs.writeFileSync('marketplace-' + counter + '.json', body, {
+    encoding: 'utf8'
+  });
 
   var results = JSON.parse(body);
   if (null === results.meta.next) {

@@ -25,10 +25,18 @@ config.init({
 
 var buildQueue = require('../lib/build_queue');
 var log = {
-  debug: function() {console.log(arguments);},
-  info: function() {console.log(arguments);},
-  warn: function() {console.log(arguments);},
-  error: function() {console.log(arguments); }
+  debug: function() {
+    console.log(arguments);
+  },
+  info: function() {
+    console.log(arguments);
+  },
+  warn: function() {
+    console.log(arguments);
+  },
+  error: function() {
+    console.log(arguments);
+  }
 };
 //require('../test/common/mock_log');
 
@@ -122,41 +130,41 @@ tap.test("Build queue handles multiple manifest urls", function(test) {
 tap.test("Multiple servers", function(test) {
   config.withConfig(function(config) {
     test.equal(config.buildQueuePollFrequencyInMilliseconds, 1000,
-               'We poll every second');
+      'We poll every second');
     test.equal(config.buildQueueStalePeriod, 10 * 1000,
-               'Stale builds are cleaned up after 10 seconds');
+      'Stale builds are cleaned up after 10 seconds');
 
     doQuery("INSERT INTO apk_build_lock " +
-            "(manifest_hash, manifest_url, last_modified) " +
-            "VALUES ('" + sha1('failedBuild') + "', '" + 'failedBuild' + 
-            "', NOW())",
-            config,
-            function(err, rows) {
-              test.equal(false, !!err, 'we could fake a stale build');
+      "(manifest_hash, manifest_url, last_modified) " +
+      "VALUES ('" + sha1('failedBuild') + "', '" + 'failedBuild' +
+      "', NOW())",
+      config,
+      function(err) {
+        test.equal(false, !! err, 'we could fake a stale build');
 
-              var state1 = null;
+        var state1 = null;
 
-              buildQueue('failedBuild', config, log, function(finishedCb) {
-                setTimeout(function() {
-                  test.equal(state1, null, 'State build lock expired');
-                  state1 = 1;
-                  finishedCb();
-                }, 1000);
-              });
+        buildQueue('failedBuild', config, log, function(finishedCb) {
+          setTimeout(function() {
+            test.equal(state1, null, 'State build lock expired');
+            state1 = 1;
+            finishedCb();
+          }, 1000);
+        });
 
-              buildQueue('failedBuild', config, log, function(finishedCb) {
-                setTimeout(function() {
-                  test.equal(state1, 1, 'Second build lock on failedBuild went through');
-                  state1 = 2;
-                  finishedCb();
+        buildQueue('failedBuild', config, log, function(finishedCb) {
+          setTimeout(function() {
+            test.equal(state1, 1, 'Second build lock on failedBuild went through');
+            state1 = 2;
+            finishedCb();
 
-                  setTimeout(function() {
-                    test.end();
-                    shouldExit = true;
-                  }, 1000);
-                });
-              }, 2000);
-            });
+            setTimeout(function() {
+              test.end();
+              shouldExit = true;
+            }, 1000);
+          });
+        }, 2000);
+      });
   });
 });
 
@@ -179,7 +187,7 @@ function testBuildQueueEmpty(test, config, cb) {
   conn.connect();
   conn.query('SELECT * FROM apk_build_lock', null, function(err, rows) {
     conn.end();
-    test.equal(false, !!err);
+    test.equal(false, !! err);
     test.equal(0, rows.length);
     cb();
   });

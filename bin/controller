@@ -87,6 +87,7 @@ config.withConfig(function(config) {
   app.post('/app_updates', function(req, res) {
     var start = new Date();
     metrics.appUpdatesRequest();
+console.log(req.body, typeof req.body);
     apkUpdates(req.body, config, function(err, outdated) {
       // Partial failures are okay (?)
       if (err) {
