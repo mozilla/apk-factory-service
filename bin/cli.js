@@ -49,7 +49,6 @@ var argv = optimist
     }
     argv.manifestOrPackage = argv._[0];
     argv.output = argv._[1];
-    // TODO have a default manifest http://example.com/manifest.webapp
     if (-1 === argv.manifestOrPackage.indexOf('://')) {
       if (!argv.overrideManifest) {
         argv.overrideManifest = 'https://example.com/manifest.webapp';
@@ -75,7 +74,7 @@ try {
 } catch (e) {}
 
 // Hosted Apps
-if (/^\w+:\/\//.test(argv.manifestOrPackag)) {
+if (/^\w+:\/\//.test(argv.manifestOrPackage)) {
   // manifest is used for owaDownloader
   manifestUrl = argv.manifestOrPackage;
   loaderDirname = manifestUrl;
@@ -96,11 +95,11 @@ if (/^\w+:\/\//.test(argv.manifestOrPackag)) {
     cliClient(manifestUrl, manifest, zip, argv, cliClientCb);
   }
   // Packaged app zip file
-} else if (fileStat.isFile()) {
+} else if (fileStat && fileStat.isFile()) {
   var zipFileLocation = path.resolve(argv.manifestOrPackage);
   buildPackagedApp(zipFileLocation);
   // Packaged app, directory of files
-} else if (fs.statSync(argv.manifestOrPackage).isDirectory()) {
+} else if (fileStat && fileStat.isDirectory()) {
   var packageDir = argv.manifestOrPackage;
   var manifestFile = path.resolve(packageDir, 'manifest.webapp');
   fs.readFile(manifestFile, {
@@ -123,8 +122,8 @@ if (/^\w+:\/\//.test(argv.manifestOrPackag)) {
     }
     var zipFile = path.resolve(packageDir, 'package.zip');
     if (fs.existsSync(zipFile)) {
-      console.error('package.zip already exists, unable to create packaged app.');
-      argv.usage();
+      console.error('package.zip already exists, unable to create ' +
+        'packaged app. ' + zipFile);
       process.exit(1);
     }
     var zipCmd = 'zip -r package.zip .';
@@ -137,18 +136,23 @@ if (/^\w+:\/\//.test(argv.manifestOrPackag)) {
         if (stderr) console.error('unzip STDERR: ' + stderr);
         process.exit(1);
       }
-      buildPackagedApp(zipFile);
+      buildPackagedApp(zipFile, function() {
+        fs.removeSync(zipFile);
+      });
     });
   });
 
 } else {
   console.error('Unable to find hosted or packaged app, sorry');
-  argv.usage();
   process.exit(1);
   //loaderDirname = path.dirname(path.resolve(process.cwd(), manifestUrl));
 }
 
-function buildPackagedApp(zipFileLocation) {
+function buildPackagedApp(zipFileLocation, cb) {
+  if (false === fs.existsSync(zipFileLocation)) {
+    console.error('Unable to read ' + zipFileLocation);
+    process.exit(1);
+  }
   var extractDir = path.join(os.tmpdir(), 'apk-cli');
   try {
     fs.removeSync(extractDir);
@@ -162,6 +166,9 @@ function buildPackagedApp(zipFileLocation) {
       console.error('Unable to unzip ' + zipFileLocation, err);
       if (stdout) console.error('unzip STDOUT: ' + stdout);
       if (stderr) console.error('unzip STDERR: ' + stderr);
+      try {
+        fs.removeSync(extractDir);
+      } catch (e) {}
       process.exit(1);
     }
     var manifestFile = path.join(extractDir, 'manifest.webapp');
@@ -172,6 +179,9 @@ function buildPackagedApp(zipFileLocation) {
       if (err) {
         console.error('Unable to read manifest.webapp from the zip file');
         console.error(err);
+        try {
+          fs.removeSync(extractDir);
+        } catch (e) {}
         process.exit(1);
       }
       try {
@@ -182,20 +192,27 @@ function buildPackagedApp(zipFileLocation) {
         fs.readFile(zipFileLocation, {
           encoding: 'binary'
         }, function(err, zip) {
-
+          try {
+            fs.removeSync(extractDir);
+          } catch (e) {}
           if (err) {
             console.error('Unable to read ' + zipFileLocation);
             console.error(err);
+
             process.exit(1);
           }
           var encodedZip = new Buffer(zip, 'binary').toString('base64');
           cliClient(argv.overrideManifest, manifest, encodedZip,
             argv, cliClientCb);
+          if ( !! cb) cb();
         });
 
       } catch (e) {
         console.error('Unable to read manifest.webapp as JSON');
         console.error(data);
+        try {
+          fs.removeSync(extractDir);
+        } catch (e) {}
         process.exit(1);
       }
 
