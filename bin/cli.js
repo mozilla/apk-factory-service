@@ -98,6 +98,57 @@ if (/^\w+:\/\//.test(argv.manifestOrPackag)) {
   // Packaged app zip file
 } else if (fileStat.isFile()) {
   var zipFileLocation = path.resolve(argv.manifestOrPackage);
+  buildPackagedApp(zipFileLocation);
+  // Packaged app, directory of files
+} else if (fs.statSync(argv.manifestOrPackage).isDirectory()) {
+  var packageDir = argv.manifestOrPackage;
+  var manifestFile = path.resolve(packageDir, 'manifest.webapp');
+  fs.readFile(manifestFile, {
+    encoding: 'utf8'
+  }, function(err, data) {
+    if (err) {
+      console.error('Unable to read manifest file, expected ' +
+        manifestFile);
+      console.error(err);
+      process.exit(1);
+    }
+    try {
+      // Validate that manifest exists...
+      JSON.parse(data);
+    } catch (e) {
+      console.error('Unable to parse JSON from the manifest file ' +
+        data);
+      console.error(err);
+      process.exit(1);
+    }
+    var zipFile = path.resolve(packageDir, 'package.zip');
+    if (fs.existsSync(zipFile)) {
+      console.error('package.zip already exists, unable to create packaged app.');
+      argv.usage();
+      process.exit(1);
+    }
+    var zipCmd = 'zip -r package.zip .';
+    exec(zipCmd, {
+      cwd: packageDir
+    }, function(err, stdout, stderr) {
+      if (err) {
+        console.error('Unable to unzip ' + zipFileLocation, err);
+        if (stdout) console.error('unzip STDOUT: ' + stdout);
+        if (stderr) console.error('unzip STDERR: ' + stderr);
+        process.exit(1);
+      }
+      buildPackagedApp(zipFile);
+    });
+  });
+
+} else {
+  console.error('Unable to find hosted or packaged app, sorry');
+  argv.usage();
+  process.exit(1);
+  //loaderDirname = path.dirname(path.resolve(process.cwd(), manifestUrl));
+}
+
+function buildPackagedApp(zipFileLocation) {
   var extractDir = path.join(os.tmpdir(), 'apk-cli');
   try {
     fs.removeSync(extractDir);
@@ -150,19 +201,6 @@ if (/^\w+:\/\//.test(argv.manifestOrPackag)) {
 
     });
   });
-
-
-
-  // Packaged app, directory of files
-} else if (fs.statSync(argv.manifestOrPackage).isDirectory()) {
-  // Check for manifest.webapp
-  // Create package
-  //cliClient(argv.overrideManifest, manifest, zip, argv, cliClientCb);
-} else {
-  console.error('Unable to find hosted or packaged app, sorry');
-  argv.usage();
-  process.exit(1);
-  //loaderDirname = path.dirname(path.resolve(process.cwd(), manifestUrl));
 }
 
 function cliClient(manifestUrl, manifest, zip, argv, cb) {
