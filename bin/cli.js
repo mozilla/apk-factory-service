@@ -7,7 +7,9 @@
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 "use strict";
 
-var fs = require('fs');
+var exec = require('child_process').exec;
+var fs = require('fs.extra');
+var os = require('os');
 var path = require('path');
 var url = require('url');
 
@@ -15,14 +17,21 @@ var optimist = require('optimist');
 var request = require('request');
 
 var argv = optimist
-  .usage('Usage: $0 {OPTIONS}')
+  .usage('Usage: $0 {OPTIONS} manifestOrPackagedApp testable.apk\n\n' +
+    'Hosted App:\t\t$0 {OPTIONS} http://example.com/manifest.webapp ' +
+    'testable.apk\n' +
+    'Packaged App Zip:\t$0 {OPTIONS} package.zip testable.apk\n' +
+    'Packaged App Dir:\t$0 {OPTIONS} ./www testable.apk\n\n' +
+    '$0 can accept either a manifest url, a zip file, or a directory ' +
+    'which contains the source code for a packaged app.\n\n' +
+    'Typical usage will not require any OPTIONS.')
   .wrap(80)
   .option('overrideManifest', {
-    desc: "The URL or path to the manifest"
+    desc: "Treat this manifest url as the canoncial url while creating the apk"
   })
   .option('endpoint', {
     desc: "The URL for the APK Factory Service",
-    default: "https://apk-review.mozilla.org"
+    default: "https://controller-review.apk.firefox.com"
   })
   .option('config-files', {
     default: 'config/default.js,config/cli.js'
@@ -38,13 +47,13 @@ var argv = optimist
     } else if (argv._.length < 2) {
       throw "";
     }
-    argv.manifest = argv._[0];
+    argv.manifestOrPackage = argv._[0];
     argv.output = argv._[1];
-    if (-1 === argv.manifest.indexOf('://')) {
+    // TODO have a default manifest http://example.com/manifest.webapp
+    if (-1 === argv.manifestOrPackage.indexOf('://')) {
       if (!argv.overrideManifest) {
-        console.log('local manifest file should be used with --overrideManifest option');
-        argv.help();
-        process.exit(1);
+        argv.overrideManifest = 'https://example.com/manifest.webapp';
+        console.log('setting --overrideManifest to ' + argv.overrideManifest);
       }
     }
   })
@@ -56,55 +65,108 @@ config.init(argv);
 var fileLoader = require('../lib/file_loader');
 var owaDownloader = require('../lib/owa_downloader');
 
-// manifest is used for owaDownloader
-var manifestUrl = argv.manifest;
+// Hosted apps
+var manifestUrl;
 var loaderDirname;
 
-if (/^\w+:\/\//.test(manifestUrl)) {
+var fileStat;
+try {
+  fileStat = fs.statSync(argv.manifestOrPackage);
+} catch (e) {}
+
+// Hosted Apps
+if (/^\w+:\/\//.test(argv.manifestOrPackag)) {
+  // manifest is used for owaDownloader
+  manifestUrl = argv.manifestOrPackage;
   loaderDirname = manifestUrl;
-} else {
-  loaderDirname = path.dirname(path.resolve(process.cwd(), manifestUrl));
-}
+  var loader = fileLoader.create(loaderDirname);
 
-var loader = fileLoader.create(loaderDirname);
+  // TODO AOK refactor and remove app Build Dir
+  var appBuildDir = '';
+  owaDownloader(manifestUrl, argv.overrideManifest, loader, appBuildDir, owaCb);
 
-// TODO AOK refactor and remove app Build Dir
-var appBuildDir = '';
-owaDownloader(argv.manifest, argv.overrideManifest, loader, appBuildDir, owaCb);
-
-function owaCb(err, manifest, appType, zip) {
-  if (err) {
-    console.error(err);
-    process.exit(1);
-  }
-  if ( !! argv.overrideManifest) {
-    manifestUrl = argv.overrideManifest;
-  }
-  cliClient(manifestUrl, manifest, zip, argv, function(err, apk) {
-    var output;
-    if (!err) {
-      if (argv.output) {
-        output = path.resolve(process.cwd(), argv.output);
-        fs.writeFile(output, apk, {
-          encoding: 'binary'
-        }, function(err) {
-          if (err) {
-            console.log(err);
-            process.exit(1);
-          }
-          console.log('APK file is available at ' + argv.output);
-          process.exit(0);
-        });
-      }
-    } else {
+  function owaCb(err, manifest, appType, zip) {
+    if (err) {
       console.error(err);
       process.exit(1);
     }
+    if ( !! argv.overrideManifest) {
+      manifestUrl = argv.overrideManifest;
+    }
+    cliClient(manifestUrl, manifest, zip, argv, cliClientCb);
+  }
+  // Packaged app zip file
+} else if (fileStat.isFile()) {
+  var zipFileLocation = path.resolve(argv.manifestOrPackage);
+  var extractDir = path.join(os.tmpdir(), 'apk-cli');
+  try {
+    fs.removeSync(extractDir);
+  } catch (e) {}
+  fs.mkdirRecursiveSync(extractDir);
+  var unzipCmd = 'unzip ' + zipFileLocation;
+  exec(unzipCmd, {
+    cwd: extractDir
+  }, function(err, stdout, stderr) {
+    if (err) {
+      console.error('Unable to unzip ' + zipFileLocation, err);
+      if (stdout) console.error('unzip STDOUT: ' + stdout);
+      if (stderr) console.error('unzip STDERR: ' + stderr);
+      process.exit(1);
+    }
+    var manifestFile = path.join(extractDir, 'manifest.webapp');
+    fs.readFile(manifestFile, {
+      encoding: 'utf8'
+    }, function(err, data) {
 
+      if (err) {
+        console.error('Unable to read manifest.webapp from the zip file');
+        console.error(err);
+        process.exit(1);
+      }
+      try {
+        var manifest = JSON.parse(data);
+        // Make mini-manifest
+        manifest.package_path = url.resolve(argv.overrideManifest, 'package.zip');
+        manifest.size = fileStat.size;
+        fs.readFile(zipFileLocation, {
+          encoding: 'binary'
+        }, function(err, zip) {
+
+          if (err) {
+            console.error('Unable to read ' + zipFileLocation);
+            console.error(err);
+            process.exit(1);
+          }
+          var encodedZip = new Buffer(zip, 'binary').toString('base64');
+          cliClient(argv.overrideManifest, manifest, encodedZip,
+            argv, cliClientCb);
+        });
+
+      } catch (e) {
+        console.error('Unable to read manifest.webapp as JSON');
+        console.error(data);
+        process.exit(1);
+      }
+
+    });
   });
+
+
+
+  // Packaged app, directory of files
+} else if (fs.statSync(argv.manifestOrPackage).isDirectory()) {
+  // Check for manifest.webapp
+  // Create package
+  //cliClient(argv.overrideManifest, manifest, zip, argv, cliClientCb);
+} else {
+  console.error('Unable to find hosted or packaged app, sorry');
+  argv.usage();
+  process.exit(1);
+  //loaderDirname = path.dirname(path.resolve(process.cwd(), manifestUrl));
 }
 
 function cliClient(manifestUrl, manifest, zip, argv, cb) {
+  console.log('Building with', argv.endpoint);
   var body = JSON.stringify({
     manifestUrl: manifestUrl,
     manifest: manifest,
@@ -129,4 +191,28 @@ function cliClient(manifestUrl, manifest, zip, argv, cb) {
       }
     }
   });
+}
+
+function cliClientCb(err, apk) {
+
+  var output;
+  if (!err) {
+    if (argv.output) {
+      output = path.resolve(process.cwd(), argv.output);
+      fs.writeFile(output, apk, {
+        encoding: 'binary'
+      }, function(err) {
+        if (err) {
+          console.log(err);
+          process.exit(1);
+        }
+        console.log('APK file is available at ' + argv.output);
+        process.exit(0);
+      });
+    }
+  } else {
+    console.error(err);
+    process.exit(1);
+  }
+
 }
