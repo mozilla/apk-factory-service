@@ -14,7 +14,6 @@ var express = require('express');
 var hawk = require('hawk');
 var raven = require('raven');
 var request = require('request');
-var toobusy = require('../lib/busy_middleware.js');
 
 var argv = require('../lib/cli_common_argv');
 var config = require('../lib/config');
@@ -24,16 +23,17 @@ var admin = require('../lib/admin');
 var apkUpdates = require('../lib/apk_updates');
 var cliDevBuild = require('../lib/cli_dev_build');
 var frontController = require('../lib/front_controller');
+var logError = require('../lib/log_error');
 var metrics = require('../lib/metrics');
 var s3Check = require('../lib/s3_check');
 
 
 config.withConfig(function(config) {
   var log = require('../lib/logging')(config);
+  process.on('uncaughtException', function (err) {
+    logError(log, 'Controller Uncaught exception', err);
+  });
   var app = express();
-
-  // Send 5xx if server is overloaded
-  app.use(toobusy);
 
   app.use(express.bodyParser());
 
@@ -53,52 +53,66 @@ config.withConfig(function(config) {
 
     metrics.generateApkRequest(manifestUrl);
 
-    frontController(manifestUrl, appType, config, function(err, s3res, isStream) {
-      if (err) {
-        return _genApkFailed(res, err);
-      }
-      res.type("application/vnd.android.package-archive");
-      res.status(200);
+    try {
+      frontController(manifestUrl, appType, config, function(err, s3res, isStream) {
+        if (err) {
+          return _genApkFailed(res, err);
+        }
+        res.type("application/vnd.android.package-archive");
+        res.status(200);
 
-      isStream = isStream || false;
+        isStream = isStream || false;
 
-      if (isStream) {
-        res.send(s3res);
-        metrics.generationApkFinished(new Date() - start);        
-      } else {
-        s3res.on('data', function(chunk) {
-          res.write(chunk);
-        });
-        s3res.on('end', function() {
-          res.send();
-          metrics.generationApkFinished(new Date() - start);
-        });
-      }
-    });
+        if (isStream) {
+          res.send(s3res);
+          metrics.generationApkFinished(new Date() - start);        
+        } else {
+          s3res.on('data', function(chunk) {
+            res.write(chunk);
+          });
+          s3res.on('end', function() {
+            res.send();
+            metrics.generationApkFinished(new Date() - start);
+          });
+        }
+      });
+    } catch (e) {
+      _reportCatch(res, manifestUrl, e);
+    }
   });
 
   function _genApkFailed(res, err) {
-    log.error(err);
+    logError(log, 'gen Apk Failed', err);
     res.type("text/plain");
     res.send(400, err);
     metrics.generationApkFailed();
   }
 
+  function _reportCatch(res, url, e) {
+      logError(log, 'Controller Exception during ' + url, e);
+      res.type("text/plain");
+      res.send(500, 'Unknown Server Error');
+      metrics.generationApkFailed();
+    }
+
   app.post('/app_updates', function(req, res) {
     var start = new Date();
     metrics.appUpdatesRequest();
-console.log(req.body, typeof req.body);
-    apkUpdates(req.body, config, function(err, outdated) {
-      // Partial failures are okay (?)
-      if (err) {
-        metrics.appUpdatesFailed();
-      }
-      res.set('Content-Type', 'application/json');
-      res.send(JSON.stringify({
-        outdated: outdated
-      }));
-      metrics.appUpdatesFinished(new Date() - start);
-    });
+    try {
+      apkUpdates(req.body, config, function(err, outdated) {
+        // Partial failures are okay (?)
+        if (err) {
+          metrics.appUpdatesFailed();
+        }
+        res.set('Content-Type', 'application/json');
+        res.send(JSON.stringify({
+          outdated: outdated
+        }));
+        metrics.appUpdatesFinished(new Date() - start);
+      });
+    } catch (e) {
+      _reportCatch(res, '/app_updates', e);
+    }
   });
 
   if (['development', 'review'].indexOf(config.environment) !== -1) {
@@ -111,7 +125,7 @@ console.log(req.body, typeof req.body);
         if (err) {
           status = 'error';
           msg = err;
-          log.error(err);
+          logError(log, 'cliDevBuild failed', err);
         } else {
 
           isBase64Stream = isBase64Stream || false;
@@ -192,9 +206,7 @@ console.log(req.body, typeof req.body);
     }, {port: port}, function(err, credentials, artifacts) {
       credentials = credentials || {};
       if(err) {
-        log.error('Bad hawk credentials for id=' + credentials.id);
-        log.error(err);
-
+        logError(log, 'Bad hawk credentials for id=' + credentials.id, err);
         log.debug('Failed Hawk artifacts; id=' + credentials.id + ' artifacts=',
            artifacts);
         log.info('Approximate Hawk local time in seconds: ' +

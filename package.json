@@ -1,7 +1,7 @@
 {
-  "name": "mozilla-apk-cli",
+  "name": "apk-factory-service",
   "version": "0.0.1",
-  "description": "A Command Line Inteface for generating Android native apps from open webapps",
+  "description": "Web service which creates Android APK installers",
   "developer": [
     {
       "name": "James Hugman",
@@ -12,9 +12,6 @@
       "email": "shout@ozten.com"
     }
   ],
-  "bin": {
-    "mozilla-apk-cli": "node bin/cli.js"
-  },
   "scripts": {
     "test": "tap test/*.js",
     "start": "node scripts/development-server.js"

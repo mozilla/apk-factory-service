@@ -15,7 +15,6 @@ var express = require('express');
 var hawk = require('hawk');
 
 var raven = require('raven');
-var toobusy = require('../lib/busy_middleware.js');
 
 var argv = require('../lib/cli_common_argv');
 var config = require('../lib/config');
@@ -23,6 +22,7 @@ config.init(argv);
 
 var apkSystem = require('../lib/apk_system');
 var ApkGenerator = require('../lib/apk_generator').ApkGenerator;
+var logError = require('../lib/log_error');
 var metrics = require('../lib/metrics');
 
 var BLOB_TYPE = require('../lib/apk_generator').BLOB_TYPE;
@@ -30,6 +30,9 @@ var S3_TYPE = require('../lib/apk_generator').S3_TYPE;
 
 config.withConfig(function(config) {
   var log = require('../lib/logging')(config);
+  process.on('uncaughtException', function (err) {
+    logError(log, 'Generator Uncaught exception:', err);
+  });
   var generator = new ApkGenerator(config.buildDir,
                                    config.keysDir,
                                    config.force,
@@ -37,21 +40,17 @@ config.withConfig(function(config) {
 
   var app = express();
 
-  // Send 5xx if server is overloaded
-  app.use(toobusy);
-
   app.use(express.bodyParser());
 
   function withHawk(req, res, next, onAuthZ) {
     var port = config.hawkPublicServerPort;
     hawk.server.authenticate(req, function(id, cb) {
-      log.info('incoming Hawk request for ' + id);
+      log.info('incoming Hawk request for ' + id + ' using port=' + port);
       cb(null, config.hawk);
     }, {port: port}, function(err, credentials, artifacts) {
       credentials = credentials || {};
       if(err) {
-        log.error('Bad hawk credentials for id=' + credentials.id);
-        log.error(err);
+        logError(log, 'Bad hawk credentials for id=' + credentials.id, err);
 
         log.debug('Failed Hawk artifacts; id=' + credentials.id + ' artifacts=',
            artifacts);
@@ -73,8 +72,12 @@ config.withConfig(function(config) {
         var post = req.body;
 
         if (! post.manifest.url) throw new Error('missing url');
-        generator.generate(post.manifest, post.zip, post.loadDir,
-                           genCb(res, config, post.manifest.url, start, log));
+        try {
+          generator.generate(post.manifest, post.zip, post.loadDir,
+                             genCb(res, config, post.manifest.url, start, log));
+        } catch (e) {
+          _reportCatch(res, post.manifest.url, e);
+        }
       });
     } else if ('/system/signer' === req.path) {
       apkSystem.signer(req, res, log);
@@ -91,6 +94,13 @@ config.withConfig(function(config) {
     }
   });
 
+  function _reportCatch(res, url, e) {
+      logError(log, 'Generator exception during ' + url, e);
+      res.type("text/plain");
+      res.send(500, 'Unknown Server Error');
+      metrics.buildingApkFailed(url);
+    }
+
   process.stdout.write('listening on ', config.generator_server_port);
   app.listen(config.generator_server_port,
              config.bind_address,
@@ -106,7 +116,7 @@ function genCb(res, config, manifesturl, start, log) {
     var locationType;
     res.set('Content-Type', 'application/json');
     if (err) {
-      log.error(err.stack);
+      logError(log, 'generate failed', err);
       metrics.buildingApkFailed(manifesturl);
       res.send({
         status: "error",
@@ -129,7 +139,7 @@ function genCb(res, config, manifesturl, start, log) {
       } else {
         fs.readFile(apkFileLocation, {encoding:'binary'}, function(err, data) {
           if (err) {
-            log.error('Problem reading apk' + err.toString());
+            logError(log, 'Problem reading apk from ' + apkFileLocation, err);
             return res.send({
               status: "error",
               message: err
@@ -137,7 +147,7 @@ function genCb(res, config, manifesturl, start, log) {
           }
           resBody.locationType = BLOB_TYPE;
           resBody.blob = new Buffer(data, 'binary').toString('base64');
-          res.send(resBody);
+          res.send(JSON.stringify(resBody));
           // Must be called after we readFile for the apkLocation
           cleanupFn();
         });
