@@ -62,7 +62,7 @@ generator_server_port = 8081;
 generator_endpoint = 'http://127.0.0.1:' + generator_server_port;
 
 // Number of seconds manifests can be cached for
-manifestCacheTTL=60
+manifestCacheTTL = 60
 
 // CLI argument: --aws-access-key-id
 // Env variable: AWS_ACCESS_KEY_ID
@@ -128,3 +128,6 @@ buildQueuePollFrequencyInMilliseconds = 10 * 1000;
 
 // Controller only
 buildQueueStalePeriod = 20 * 60 * 1000; // 20 minutes ago
+
+// Generator only
+maximumNumberOfConcurrentBuilds = 10;
