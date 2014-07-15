@@ -39,6 +39,8 @@ config.withConfig(function(config) {
 
   app.use(raven.middleware.express(config.sentryDSN));
 
+  app.use(metrics.requests());
+
   app.get('/application.apk', function(req, res) {
     var start = new Date();
 
