@@ -69,6 +69,8 @@ config.withConfig(function(config) {
 
   app.use(raven.middleware.express(config.sentryDSN));
 
+  app.use(metrics.requests());
+
   app.use(function(req, res, next) {
     var start = new Date();
     if ('/build' === req.path) {
