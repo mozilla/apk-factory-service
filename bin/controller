@@ -30,7 +30,7 @@ var s3Check = require('../lib/s3_check');
 
 config.withConfig(function(config) {
   var log = require('../lib/logging')(config);
-  process.on('uncaughtException', function (err) {
+  process.on('uncaughtException', function(err) {
     logError(log, 'Controller Uncaught exception', err);
   });
   var app = express();
@@ -38,6 +38,8 @@ config.withConfig(function(config) {
   app.use(express.bodyParser());
 
   app.use(raven.middleware.express(config.sentryDSN));
+
+  app.use(metrics.requests());
 
   app.get('/application.apk', function(req, res) {
     var start = new Date();
@@ -56,7 +58,9 @@ config.withConfig(function(config) {
     try {
       frontController(manifestUrl, appType, config, function(err, s3res, isStream) {
         if (err) {
-          return _genApkFailed(res, err);
+          // s3res is actually an HTTP status code
+          // TODO: gross
+          return _genApkFailed(res, err, s3res);
         }
         res.type("application/vnd.android.package-archive");
         res.status(200);
@@ -65,7 +69,7 @@ config.withConfig(function(config) {
 
         if (isStream) {
           res.send(s3res);
-          metrics.generationApkFinished(new Date() - start);        
+          metrics.generationApkFinished(new Date() - start);
         } else {
           s3res.on('data', function(chunk) {
             res.write(chunk);
@@ -81,19 +85,20 @@ config.withConfig(function(config) {
     }
   });
 
-  function _genApkFailed(res, err) {
+  function _genApkFailed(res, err, statusCode) {
+    statusCode = statusCode || 400;
     logError(log, 'gen Apk Failed', err);
     res.type("text/plain");
-    res.send(400, err);
+    res.send(statusCode, err);
     metrics.generationApkFailed();
   }
 
   function _reportCatch(res, url, e) {
-      logError(log, 'Controller Exception during ' + url, e);
-      res.type("text/plain");
-      res.send(500, 'Unknown Server Error');
-      metrics.generationApkFailed();
-    }
+    logError(log, 'Controller Exception during ' + url, e);
+    res.type("text/plain");
+    res.send(500, 'Unknown Server Error');
+    metrics.generationApkFailed();
+  }
 
   app.post('/app_updates', function(req, res) {
     var start = new Date();
@@ -126,6 +131,7 @@ config.withConfig(function(config) {
           status = 'error';
           msg = err;
           logError(log, 'cliDevBuild failed', err);
+          return res.send(s3resOrBlob || 400, msg);
         } else {
 
           isBase64Stream = isBase64Stream || false;
@@ -141,7 +147,7 @@ config.withConfig(function(config) {
               apk: s3resOrBlob,
               message: msg
             }));
-            metrics.generationApkFinished(new Date() - start);        
+            metrics.generationApkFinished(new Date() - start);
           } else {
             var buf = [];
             s3resOrBlob.on('data', function(chunk) {
@@ -203,14 +209,16 @@ config.withConfig(function(config) {
     hawk.server.authenticate(req, function(id, cb) {
       log.info('incoming Hawk request for ' + id);
       cb(null, config.adminHawk);
-    }, {port: port}, function(err, credentials, artifacts) {
+    }, {
+      port: port
+    }, function(err, credentials, artifacts) {
       credentials = credentials || {};
-      if(err) {
+      if (err) {
         logError(log, 'Bad hawk credentials for id=' + credentials.id, err);
         log.debug('Failed Hawk artifacts; id=' + credentials.id + ' artifacts=',
-           artifacts);
+          artifacts);
         log.info('Approximate Hawk local time in seconds: ' +
-                    hawk.utils.now() / 1000);
+          hawk.utils.now() / 1000);
         res.send('Access denied', 401);
         return;
       }

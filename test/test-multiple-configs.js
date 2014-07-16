@@ -29,7 +29,11 @@ tap.test("Multiple configs works as expected", function(test) {
       newprop: 12345, // new from override
       buz: 'baz',
       huh: undefined,
-      animals: { cat: 'Snowball', dog: 'Spot', lamma: 'Rojer' },
+      animals: {
+        cat: 'Snowball',
+        dog: 'Spot',
+        lamma: 'Rojer'
+      },
       bar: 42,
       buildDir: "/tmp/test",
       cacheDir: "/tmp/test",
@@ -37,11 +41,12 @@ tap.test("Multiple configs works as expected", function(test) {
       force: undefined,
       debug: false,
       bind_address: undefined,
-      controller_server_port:  undefined,
-      generator_endpoint:  undefined,
-      generator_server_port:  undefined,
+      controller_server_port: undefined,
+      generator_endpoint: undefined,
+      generator_server_port: undefined,
       awsAccessKeyId: undefined,
       awsSecretAccessKey: undefined,
+      maximumNumberOfConcurrentBuilds: 10,
       varPath: '/tmp/var'
     }, "Deep Equals of configuration object");
     test.end();

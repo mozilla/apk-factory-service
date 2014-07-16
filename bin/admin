@@ -71,6 +71,8 @@ console.log('Using ', adminEndpoint);
 
 var body = JSON.stringify(params);
 
+console.log(config.adminHawk.key);
+
 request({
   url: adminEndpoint,
   method: 'POST',
