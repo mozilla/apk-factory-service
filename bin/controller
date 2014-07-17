@@ -69,7 +69,7 @@ config.withConfig(function(config) {
 
         if (isStream) {
           res.send(s3res);
-          metrics.generationApkFinished(new Date() - start);
+          metrics.generationApkFinished(manifestUrl, new Date() - start);
         } else {
           s3res.on('data', function(chunk) {
             res.write(chunk);
