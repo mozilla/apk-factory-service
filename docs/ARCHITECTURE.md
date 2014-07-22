@@ -5,8 +5,12 @@
 This service processes HTTP requests directly from the following clients:
 * Firefox for Android
 * Developers using a CLI
+* Marketplace pre-generating APKs
 
-This traffic may indirectly come from the Marketplace, via a daily update check, or directly from user action.
+The traffic patterns are as follows:
+* Direct user action installing apps
+* Nightly the Marketplace review queue is published and pre-generates APKs so they will be cached
+* A daily Android app update check
 
 A load balancer will hand traffic to an nginx web server which will proxy traffic to our controller deamon.
 There can be N controller deamons active, to scale the service horizontally.
@@ -25,14 +29,11 @@ These requests are made through an HTTP caching layer (Squid reverse proxy).
 These requests would go to any place an OWA is hosted, such as:
 * our Marketplace
 * another Marketplace
-* a application's website
+* an application's website
 
 These results are sent via a multipart HTTP Post to the Generator web service.
 This work request goes through a load balancer layer, so that N Generator deamons
 can be run.
-
-The Generator ensures that an Android Certificate is available for the appliation.
-If it doesn't have one, one is auto-generated.
 
 A skeleton APK Project is created on disk.
 
@@ -40,10 +41,17 @@ Inputs are modified from OWA to Android standards.
 
 Inputs are written to disk and used to fill in the APK Project template.
 
-ant is invoked with some arugments and uses files on disk to build and sign the APK.
+ant is invoked with some arugments and uses files on disk to build an un-signed APK.
 
-The resulting APK is sent in the HTTP response to the Controller.
+This apk is written to S3.
 The working build directory is removed.
+
+The Generator uses the APK Signer web service.
+
+The Signer service ensures the same certificate is used to sign an APK based on the manifest URL.
+Certificates are per-app.
+
+The resulting signed APK is read out of S3 and is sent in the HTTP response to the Controller.
 
 The Controller updates the APK Cache with the APK file.
 Finally, the APK File is returned to the client.
@@ -80,10 +88,14 @@ The client can then make a subsequent Install APK request.
 A developer will `npm install apk-service-factory` and then do a
 command line build of an APK.
 
-TBD - this can be architected in at least 2 ways:
+This CLI will hit the **reviewer** instance of the controller.
 
-1. CLI code runs OWA Downloader code and POSTS to the review instance to a special CLI build API
-2. CLI depends on ant and Android SDK. Portions of the server side codebase have CLI alternatives which all run locally. This can be used "offline".
+## Instance types - Release versus Review
+
+This architecture is deployed twice. Once in **release** mode and again in **review** mode.
+
+Production review is used by the Marketplace reviewers and the CLI tool.
+Review APKs are never cached and always re-generated.
 
 ## Implementation Details
 
@@ -92,9 +104,15 @@ Notes for background on why the current architecure exists.
 OWA Versions aren't regulated in any way, so they aren't very useful to us.
 
 A request for an APK Install blocks on a per-manifest basis.
+
 So 4 concurrent requests will be queued up with the first request
 obtaining a lock and either returning a cached APK or doing the
-build. The 3 subsequent calls should should use the cache and return quickly.
+build.
+
+The 3 subsequent calls should should use the cache and return quickly.
+
 This lock in at the controller deamon, so N controller deamons will
 cause several concurrent writes to the S3 App Cache, which shouldn't be
-an issue. The main reason is to avoid concurrency issues in the ant build.
+an issue.
+
+The main reason is to avoid concurrency issues in the ant build.

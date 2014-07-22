@@ -175,6 +175,10 @@ Example: 443 in production.
 
     hawkPublicServerPort = 8081;
 
+### maximumNumberOfConcurrentBuilds
+
+Limit total number of active builds with maximumNumberOfConcurrentBuilds. Defaults to `10`.
+
 ## Development Only Config
 
 **IGNORE FOR STAGE / PRODUCTION**
