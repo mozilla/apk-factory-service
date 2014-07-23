@@ -1,17 +1,11 @@
 # Developer Docs
 
-## Requirements
-
-* NodeJS
-* Java
-* Ant
-* Android SDK
-
-Running the service
-
-    npm start
-
 ## NodeJS Coding Style
+
+Source code should use 2 spaces for indentation and be compatible with our js-hint setup.
+js-beutify is useful here.
+
+    js-beautify -s 2 -r some_file.js
 
 Use NodeJS callback error style. All errors should be wrapped
 in an Error at the point they are noted. Errors passed up the
@@ -33,12 +27,15 @@ Using `Error` provides good exceptions which are logged to sentry.
 Services should handle errors in a sane way and not be shy about
 crashing, as they are restarted and managed at a higher level.
 
-    js-beautify -s 2 -r -f some_file.js
-
 ## Useful Tools
+
+You can verifiy .apk files without loading them into Android:
 
 * java -jar lib/ext/apktool.jar d some.apk some
 * jarsigner -verify -verbose some.apk
+
+You can get example open web app manifests:
+
 * Test Manifests http://testmanifest.com/
 
 ## Release Management

@@ -55,6 +55,10 @@ You need to have API 19 (or maybe higher?). Check for
 Please read [config/default.js](config/default.js) which documents the various
 configuration paramters and allowable values.
 
+Use `config/developer.js` to override any settings.
+
+    cp config/developer.js-dist config/developer.js
+
 Local development
 -----------------
 
