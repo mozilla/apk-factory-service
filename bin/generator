@@ -33,6 +33,7 @@ var S3_TYPE = require('../lib/apk_generator').S3_TYPE;
 config.withConfig(function(config) {
   var log = require('../lib/logging')(config);
   process.on('uncaughtException', function(err) {
+    buildLimit.error();
     logError(log, 'Generator Uncaught exception:', err);
   });
   var generator = new ApkGenerator(config.buildDir,
