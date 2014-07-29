@@ -144,6 +144,11 @@ Some notes on how its process is started up:
     CONFIG_FILES='/home/ubuntu/apk-factory-service/config/default.js,/home/ubuntu/apk-factory-service/config/aws.js' \
     forever start bin/controller
 
+Monitoring
+----------
+
+Check out the [monitoring documentation](./docs/MONITORING.md).
+
 Command Line Interface
 ----------------------
 
