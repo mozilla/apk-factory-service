@@ -93,12 +93,6 @@ And then load in Chrome:
 * [Controller Node Inspector](http://localhost:8888/debug?port=5858)
 * [Generator Node Inspector](http://localhost:8889/debug?port=5859)
 
-CLI
----
-
-There is a command line interface to create APKs locally.
-
-    node  --endpoint=http://localhost:8080 bin/cli.js http://people.mozilla.org/~fdesre/openwebapps/package.manifest application.apk
 
 Testing
 -------
@@ -115,6 +109,13 @@ Integration tests
 or to target a different environment
 
      $ APK_ENDPOINT='http://dapk.net' tap int-test/integration-test.js
+
+To check if things are working, you can request an APK build from your local
+server like this:
+
+    curl -v -o application.apk 'http://localhost:8080/application.apk?manifestUrl=https://yacht.paas.allizom.org/yacht/manifest.webapp'
+
+Where the `manifestUrl` is a valid link to an open web app manifest.
 
 Deployment
 ----------
@@ -148,9 +149,3 @@ Monitoring
 ----------
 
 Check out the [monitoring documentation](./docs/MONITORING.md).
-
-Command Line Interface
-----------------------
-
-    node bin/cli.js
-
