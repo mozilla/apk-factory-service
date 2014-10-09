@@ -12,8 +12,8 @@ The traffic patterns are as follows:
 * Nightly the Marketplace review queue is published and pre-generates APKs so they will be cached
 * A daily Android app update check
 
-A load balancer will hand traffic to an nginx web server which will proxy traffic to our controller deamon.
-There can be N controller deamons active, to scale the service horizontally.
+A load balancer will hand traffic to an nginx web server which will proxy traffic to our controller daemon.
+There can be N controller daemons active, to scale the service horizontally.
 
 ## Install APK
 
@@ -32,7 +32,7 @@ These requests would go to any place an OWA is hosted, such as:
 * an application's website
 
 These results are sent via a multipart HTTP Post to the Generator web service.
-This work request goes through a load balancer layer, so that N Generator deamons
+This work request goes through a load balancer layer, so that N Generator daemons
 can be run.
 
 A skeleton APK Project is created on disk.
@@ -111,7 +111,7 @@ build.
 
 The 3 subsequent calls should should use the cache and return quickly.
 
-This lock in at the controller deamon, so N controller deamons will
+This lock in at the controller daemon, so N controller daemons will
 cause several concurrent writes to the S3 App Cache, which shouldn't be
 an issue.
 
