@@ -2,10 +2,12 @@
 
 ## NodeJS Coding Style
 
-Source code should use 2 spaces for indentation and be compatible with our js-hint setup.
-js-beutify is useful here.
+Source code should use 2 spaces for indentation and be compatible with our JSHint setup.
+js-beautify is useful here.
 
-    js-beautify -s 2 -r some_file.js
+```sh
+js-beautify -s 2 -r some_file.js
+```
 
 Use NodeJS callback error style. All errors should be wrapped
 in an Error at the point they are noted. Errors passed up the
@@ -13,14 +15,16 @@ stack should not be re-declared.
 
 Examples:
 
-    if(! option.hamsterDance) {
-      cb(new Error('hamsterDance is a required option');
-    }
+```js
+if (! option.hamsterDance) {
+  cb(new Error('hamsterDance is a required option');
+}
 
-    request(opts, function(err, res, body) {
-      if (err) return cb(err);
-      ...
-    }
+request(opts, function(err, res, body) {
+  if (err) return cb(err);
+  // ...
+}
+```
 
 Using `Error` provides good exceptions which are logged to sentry.
 
