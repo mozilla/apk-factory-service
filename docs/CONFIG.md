@@ -14,7 +14,7 @@ It is a comma delimited string.
 
 ## Common Config Parameters
 
-These should be set for both the controller and generator deamons
+These should be set for both the controller and generator daemons
 
 ### environment
 environment - Either development, review or release
@@ -25,7 +25,7 @@ This is the main way to control if you are deploying the reviewer or release ins
 This should match `signerUrl`.
 
 ### bind_address
-Use the specific ip address to listen for traffic for deamon (such as generator or controller)
+Use the specific ip address to listen for traffic for daemon (such as generator or controller)
 
     bind_address = "127.0.0.1";
 
@@ -145,7 +145,7 @@ machines.
 
 Hawk's server authentication between the admin CLI and controller
 needs to know what port number is publically exposed, even
-if the deamon binds to a different one internally.
+if the daemon binds to a different one internally.
 
 Example: 443 in production.
 
@@ -167,9 +167,9 @@ slash. See https://github.com/mozilla/apk-signer
 
 ### hawkPublicServerPort
 
-Hawk's server authentication between the controller and generater
+Hawk's server authentication between the controller and generator
 needs to know what port number is publically exposed, even
-if the deamon binds to a different one internally.
+if the daemon binds to a different one internally.
 
 Example: 443 in production.
 
