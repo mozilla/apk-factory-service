@@ -18,7 +18,7 @@ Dependencies
 
 APT-based Linux:
 
-    sudo apt-get install graphicsmagick  mysql-server
+    sudo apt-get install graphicsmagick  mysql-server g++
     # Android SDK also requires:
     sudo apt-get install openjdk-7-jdk ant ia32-libs unzip
 
@@ -47,6 +47,7 @@ See [Notes on Android SDK](https://wiki.mozilla.org/Mobile/Fennec/Android#Instal
 for common setup instructions.
 You'll need to expose the SDK path with something like this:
 
+    export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
     export ANDROID_HOME=~/Downloads/adt-bundle-mac/sdk/
 
 You need to have API 19 (or maybe higher?). Check for
@@ -92,6 +93,10 @@ And then load in Chrome:
 
 * [Controller Node Inspector](http://localhost:8888/debug?port=5858)
 * [Generator Node Inspector](http://localhost:8889/debug?port=5859)
+
+Logs will appear in var/log
+
+Logs will appear in `var/log/apk-generator.log` and `var/log/apk-controller.log`
 
 
 Testing
